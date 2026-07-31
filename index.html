@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<title>Buku Kehadiran & Kasus Siswa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* =====================================================================
+     KONFIGURASI GAS — WAJIB DIISI SETELAH DEPLOY (lihat script tag bawah)
+     ===================================================================== */
+  :root{
+    --paper:#F4F6F1; --rule:#D7DECD; --margin-red:#BE5347;
+    --ink:#1C3A44; --ink-soft:#4A6572; --ink-faint:#8AA0A6;
+    --brass:#BD8A2E;
+    --hadir:#4B7A5B; --hadir-bg:#E7EFE5;
+    --izin:#C4893A; --izin-bg:#F5EBDA;
+    --sakit:#4E6E93; --sakit-bg:#E5EAF2;
+    --alpa:#B8493C; --alpa-bg:#F5E2DE;
+    --card:#FFFFFF;
+    --shadow:0 2px 10px rgba(28,58,68,0.08);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-top: env(safe-area-inset-top, 0px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; overscroll-behavior-y:none;}
+  body{
+    background:var(--paper);
+    font-family:'IBM Plex Sans', sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    padding-bottom:calc(70px + var(--safe-bottom));
+    font-size:15px;
+  }
+  .wrap{max-width:640px; margin:0 auto; padding:0 14px;}
+
+  /* ===== Header ===== */
+  header.cover{
+    background:var(--ink); color:var(--paper);
+    padding:calc(16px + var(--safe-top)) 0 16px;
+    position:relative;
+  }
+  header.cover .wrap{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand .mark{
+    width:40px; height:40px; border-radius:9px;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; overflow:hidden; background:rgba(255,255,255,.06);
+  }
+  .brand .mark img{width:100%; height:100%; object-fit:contain; display:block;}
+  .brand h1{font-family:'Fraunces',serif; font-size:16.5px; font-weight:600; margin:0; line-height:1.25;}
+  .brand p{margin:1px 0 0; font-size:11px; color:#B9CBC7;}
+  #syncBtn{
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); color:var(--paper);
+    border-radius:20px; padding:7px 12px; font-size:11.5px; font-weight:600;
+    display:flex; align-items:center; gap:6px; cursor:pointer; font-family:'IBM Plex Mono',monospace;
+    white-space:nowrap;
+  }
+  #syncBtn .dot{width:6px; height:6px; border-radius:50%; background:var(--hadir);}
+  #syncBtn.busy .dot{background:var(--izin); animation:pulse 1s infinite;}
+  #syncBtn.err .dot{background:var(--alpa);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+  .config-banner{
+    background:var(--alpa-bg); color:var(--alpa); font-size:12.5px; padding:10px 14px;
+    line-height:1.5; border-bottom:1px solid var(--alpa);
+  }
+  .config-banner code{background:rgba(0,0,0,.06); padding:1px 5px; border-radius:4px; font-size:11.5px;}
+
+  main{padding-top:16px;}
+  .panel{display:none;}
+  .panel.active{display:block; animation:fadeIn .18s ease;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+  /* ===== Cards ===== */
+  .card{
+    background:var(--card); border:1px solid var(--rule); border-left:3px solid var(--margin-red);
+    border-radius:10px; box-shadow:var(--shadow); padding:16px 15px; margin-bottom:14px;
+  }
+  .card h2{font-family:'Fraunces',serif; font-weight:600; font-size:16.5px; margin:0 0 4px; display:flex; align-items:center; gap:8px;}
+  .card h2 .num{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-faint); font-weight:500;}
+  .card p.hint{color:var(--ink-soft); font-size:12.5px; margin:0 0 14px; line-height:1.5;}
+
+  .stack{display:flex; flex-direction:column; gap:10px;}
+  .field{display:flex; flex-direction:column; gap:5px;}
+  .field label{font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft);}
+  select, input[type=date], input[type=text], input[type=number], textarea{
+    font-family:'IBM Plex Sans', sans-serif; border:1.5px solid var(--rule); background:var(--paper);
+    border-radius:8px; padding:11px 12px; font-size:15px; color:var(--ink); outline:none; width:100%;
+    -webkit-appearance:none; appearance:none;
+  }
+  select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%234A6572' stroke-width='2' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 12px center; padding-right:34px;
+  }
+  select:focus, input:focus, textarea:focus{border-color:var(--ink-soft);}
+  textarea{resize:vertical; min-height:64px;}
+
+  .btn{
+    font-family:'IBM Plex Sans', sans-serif; font-weight:600; font-size:14px;
+    border:1.5px solid var(--ink); background:var(--ink); color:var(--paper);
+    padding:12px 16px; border-radius:9px; cursor:pointer; width:100%;
+    display:flex; align-items:center; justify-content:center; gap:7px;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn.secondary{background:transparent; color:var(--ink); border-color:var(--rule);}
+  .btn.brass{background:var(--brass); border-color:var(--brass); color:#fff;}
+  .btn.danger{background:transparent; color:var(--alpa); border-color:var(--alpa-bg);}
+  .btn.auto{width:auto;}
+  .btn.sm{padding:8px 12px; font-size:12.5px; border-radius:7px;}
+  .btn:disabled{opacity:.45;}
+  .btn-row{display:flex; gap:8px; flex-wrap:wrap;}
+  .btn-row .btn{flex:1; min-width:130px;}
+
+  .dropzone{
+    border:2px dashed var(--rule); border-radius:10px; padding:22px 16px; text-align:center;
+    color:var(--ink-soft); font-size:12.5px; cursor:pointer; background:var(--paper);
+  }
+  .dropzone.drag{border-color:var(--brass); background:var(--izin-bg);}
+  .dropzone strong{color:var(--ink); display:block; font-size:14px; margin-bottom:3px; font-family:'Fraunces',serif;}
+
+  /* ===== list items (mobile card rows, replaces tables) ===== */
+  .li-item{
+    display:flex; align-items:center; gap:10px; padding:10px 4px; border-bottom:1px solid var(--rule);
+  }
+  .li-item:last-child{border-bottom:none;}
+  .li-item .no{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-faint); width:26px; flex-shrink:0;}
+  .li-item .nm{flex:1; min-width:0;}
+  .li-item .nm .name{font-weight:600; font-size:14px;}
+  .li-item .nm .kelas{font-size:11px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace;}
+
+  .kelas-pill{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600;
+    background:var(--sakit-bg); color:var(--sakit); padding:2px 8px; border-radius:20px; white-space:nowrap;
+  }
+
+  .toolbar{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
+  .toolbar select, .toolbar input{width:auto; flex:1; min-width:110px;}
+
+  /* status buttons */
+  .status-row{
+    display:flex; align-items:center; gap:10px; padding:11px 4px; border-bottom:1px solid var(--rule);
+  }
+  .status-row:last-child{border-bottom:none;}
+  .status-row .who{flex:1; min-width:0;}
+  .status-row .who .name{font-weight:600; font-size:14px; line-height:1.3;}
+  .status-row .who .no{font-size:11px; color:var(--ink-faint); font-family:'IBM Plex Mono',monospace;}
+  .status-btns{display:flex; gap:5px; flex-shrink:0;}
+  /* Baris rekap per-siswa (nama + kotak Hadir/Sakit/Izin/Alpa) selalu ditumpuk
+     vertikal, bukan sejajar, supaya di layar HP nama tidak tertindih/terpotong
+     oleh kotak status. */
+  .status-row.stack{flex-direction:column; align-items:stretch;}
+  .status-row.stack .who{flex:none; width:100%;}
+  .status-row.stack .summary-strip{margin-top:8px; width:100%;}
+  .st-btn{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:700;
+    border:1.5px solid var(--rule); background:#fff; color:var(--ink-soft);
+    padding:8px 0; border-radius:7px; cursor:pointer; width:34px; text-align:center;
+  }
+  .st-btn[data-st="Hadir"].active{background:var(--hadir-bg); border-color:var(--hadir); color:var(--hadir);}
+  .st-btn[data-st="Sakit"].active{background:var(--sakit-bg); border-color:var(--sakit); color:var(--sakit);}
+  .st-btn[data-st="Izin"].active{background:var(--izin-bg); border-color:var(--izin); color:var(--izin);}
+  .st-btn[data-st="Alpa"].active{background:var(--alpa-bg); border-color:var(--alpa); color:var(--alpa);}
+
+  .badge{
+    display:inline-flex; align-items:center; gap:5px; font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px; font-weight:600; padding:3px 9px; border-radius:20px; white-space:nowrap;
+  }
+  .badge.Hadir{background:var(--hadir-bg); color:var(--hadir);}
+  .badge.Sakit{background:var(--sakit-bg); color:var(--sakit);}
+  .badge.Izin{background:var(--izin-bg); color:var(--izin);}
+  .badge.Alpa{background:var(--alpa-bg); color:var(--alpa);}
+  .badge.Selesai{background:var(--hadir-bg); color:var(--hadir);}
+  .badge.DalamProses{background:var(--izin-bg); color:var(--izin);}
+  .badge.PerluTindakan{background:var(--alpa-bg); color:var(--alpa);}
+  .badge.Ringan{background:var(--izin-bg); color:var(--izin);}
+  .badge.Sedang{background:#F5DFC2; color:#9C5F1A;}
+  .badge.Berat{background:var(--alpa-bg); color:var(--alpa);}
+  .badge.SangatBerat{background:#3A2226; color:#F5A79A;}
+  .badge.Prestasi{background:var(--hadir-bg); color:var(--hadir);}
+  .badge.Netral{background:var(--sakit-bg); color:var(--sakit);}
+  .badge.Baru{background:var(--alpa-bg); color:var(--alpa);}
+  .badge.Dibaca{background:var(--hadir-bg); color:var(--hadir);}
+
+  /* ===== Poin kedisiplinan ===== */
+  .poin-badge{
+    display:inline-flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:20px; white-space:nowrap;
+  }
+  .poin-badge.good{background:var(--hadir-bg); color:var(--hadir);}
+  .poin-badge.warn{background:var(--izin-bg); color:var(--izin);}
+  .poin-badge.bad{background:var(--alpa-bg); color:var(--alpa);}
+  .poin-summary-card{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--paper); border:1px solid var(--rule); border-radius:9px; padding:12px 14px; margin-top:12px;
+  }
+  .poin-summary-card .lbl{font-size:12px; color:var(--ink-soft);}
+  .poin-summary-card .val{font-family:'Fraunces',serif; font-weight:700; font-size:24px;}
+  .poin-summary-card .val.good{color:var(--hadir);}
+  .poin-summary-card .val.warn{color:var(--izin);}
+  .poin-summary-card .val.bad{color:var(--alpa);}
+  .poin-rank-item{display:flex; align-items:center; gap:10px; padding:9px 4px; border-bottom:1px solid var(--rule);}
+  .poin-rank-item:last-child{border-bottom:none;}
+  .poin-rank-item .nm{flex:1; min-width:0;}
+  .poin-rank-item .nm .name{font-weight:600; font-size:13.5px;}
+  .poin-rank-item .nm .kelas{font-size:11px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace;}
+
+  /* ===== Histori penanganan kasus ===== */
+  .histori-toggle{
+    font-family:'IBM Plex Sans',sans-serif; font-size:11.5px; font-weight:600; color:var(--ink-soft);
+    background:none; border:none; padding:4px 0; cursor:pointer; text-decoration:underline;
+  }
+  .histori-list{margin-top:8px; padding-left:2px; border-left:2px solid var(--rule);}
+  .histori-item{position:relative; padding:0 0 10px 16px;}
+  .histori-item:last-child{padding-bottom:0;}
+  .histori-item::before{
+    content:""; position:absolute; left:-5px; top:3px; width:8px; height:8px;
+    border-radius:50%; background:var(--brass); border:2px solid #fff;
+  }
+  .histori-item .ts{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-faint);}
+  .histori-item .ct{font-size:12.5px; margin-top:2px; line-height:1.4;}
+  .tindak-lanjut-form{
+    margin-top:10px; padding:10px; background:#fff; border:1px dashed var(--rule); border-radius:8px;
+    display:flex; flex-direction:column; gap:8px;
+  }
+
+  .summary-strip{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
+  .summary-chip{flex:1; min-width:70px; background:var(--paper); border:1px solid var(--rule); border-radius:9px; padding:9px 10px; text-align:center;}
+  .summary-chip .n{font-family:'Fraunces',serif; font-weight:700; font-size:20px; line-height:1.1;}
+  .summary-chip .l{font-size:10px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em;}
+  .summary-chip.Hadir .n{color:var(--hadir);} .summary-chip.Sakit .n{color:var(--sakit);}
+  .summary-chip.Izin .n{color:var(--izin);} .summary-chip.Alpa .n{color:var(--alpa);}
+  .report-grid{display:grid; gap:8px; margin-top:10px;}
+  .report-grid .summary-chip{min-width:0;}
+  .print-shell{display:none;}
+
+  .action-card{
+    background:#fff; border:1px solid var(--rule); border-top:3px solid var(--alpa);
+    border-radius:9px; padding:13px 14px; box-shadow:var(--shadow); margin-bottom:10px;
+  }
+  .action-card h3{font-family:'Fraunces',serif; font-size:15px; margin:0 0 2px;}
+  .action-card .kls{font-size:11px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; margin-bottom:7px;}
+  .action-card .reasons{display:flex; flex-direction:column; gap:5px;}
+  .action-card .reason{font-size:11.5px; background:var(--alpa-bg); color:var(--alpa); padding:5px 8px; border-radius:6px; line-height:1.4;}
+
+  .empty-state{text-align:center; padding:30px 16px; color:var(--ink-soft); font-size:13px;}
+  .empty-state .ico{font-size:24px; display:block; margin-bottom:8px;}
+
+  .case-card{border:1px solid var(--rule); border-radius:9px; padding:13px 14px; margin-bottom:10px; background:var(--paper);}
+  .case-card .top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+  .case-card .who{font-weight:600; font-size:14px;}
+  .case-card .meta{font-size:11px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; margin-top:2px;}
+  .case-card .desc{font-size:13px; margin-top:8px; line-height:1.5;}
+  .case-card .tindakan{font-size:12px; margin-top:6px; color:var(--ink-soft); background:#fff; border-left:2px solid var(--brass); padding:6px 10px; border-radius:0 6px 6px 0;}
+  .feedback-actions{display:flex; gap:6px; margin-top:10px;}
+  .case-actions{display:flex; gap:6px; margin-top:10px; align-items:center;}
+  .case-actions select{width:auto; flex:1;}
+
+  .rekap-card{border:1px solid var(--rule); border-radius:9px; padding:12px 14px; margin-bottom:9px; background:#fff;}
+  .rekap-card .rk-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .rekap-counts{display:flex; gap:14px; font-family:'IBM Plex Mono',monospace; font-size:12px; margin-bottom:8px;}
+  .rekap-counts span b{display:block; font-size:15px;}
+  .rekap-bar{height:7px; background:var(--rule); border-radius:5px; overflow:hidden;}
+  .rekap-bar div{height:100%; background:var(--hadir);}
+
+  .muted{color:var(--ink-soft); font-size:12px;}
+
+  /* ===== Dropdown checklist siswa (multi-pilih) ===== */
+  .checkdrop{position:relative;}
+  .checkdrop-btn{
+    width:100%; text-align:left; font-family:'IBM Plex Sans',sans-serif; font-size:15px; color:var(--ink);
+    border:1.5px solid var(--rule); background:var(--paper); border-radius:8px; padding:11px 12px;
+    display:flex; align-items:center; justify-content:space-between; gap:8px; cursor:pointer;
+  }
+  .checkdrop-btn:focus{border-color:var(--ink-soft); outline:none;}
+  .checkdrop-btn .cd-label{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;}
+  .checkdrop-btn .cd-label.placeholder{color:var(--ink-faint);}
+  .checkdrop-arrow{color:var(--ink-soft); font-size:11px; transition:transform .15s; flex-shrink:0;}
+  .checkdrop.open .checkdrop-arrow{transform:rotate(180deg);}
+  .checkdrop-panel{
+    display:none; flex-direction:column; position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:40;
+    background:#fff; border:1.5px solid var(--rule); border-radius:10px; box-shadow:var(--shadow);
+    padding:8px; max-height:280px;
+  }
+  .checkdrop.open .checkdrop-panel{display:flex;}
+  .checkdrop-search{
+    border:1.5px solid var(--rule); border-radius:7px; padding:8px 10px; font-size:13.5px; margin-bottom:6px;
+    font-family:'IBM Plex Sans',sans-serif; outline:none; width:100%; flex-shrink:0;
+  }
+  .checkdrop-search:focus{border-color:var(--ink-soft);}
+  .checkdrop-list{overflow-y:auto;}
+  .checkdrop-item{
+    display:flex; align-items:center; gap:9px; padding:9px 6px; border-radius:7px; cursor:pointer;
+  }
+  .checkdrop-item:hover{background:var(--paper);}
+  .checkdrop-item input[type=checkbox]{width:17px; height:17px; flex-shrink:0; accent-color:var(--brass);}
+  .checkdrop-item .cd-name{font-size:13.5px; font-weight:500; flex:1; min-width:0;}
+  .checkdrop-item .cd-no{font-size:11px; color:var(--ink-faint); font-family:'IBM Plex Mono',monospace; flex-shrink:0;}
+  .checkdrop-empty{padding:14px; text-align:center; color:var(--ink-soft); font-size:12.5px;}
+  .checkdrop-footer{display:flex; justify-content:space-between; align-items:center; gap:8px; padding-top:6px; margin-top:4px; border-top:1px solid var(--rule); flex-shrink:0;}
+  .checkdrop-footer .cd-clear{background:none; border:none; color:var(--alpa); font-size:12px; font-weight:600; cursor:pointer; padding:4px 2px; font-family:'IBM Plex Sans',sans-serif;}
+  .checkdrop-footer .cd-done{background:var(--ink); color:#fff; border:none; border-radius:7px; padding:7px 14px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'IBM Plex Sans',sans-serif;}
+
+  /* ===== Bottom nav ===== */
+  nav.tabbar{
+    position:fixed; left:0; right:0; bottom:0; z-index:90;
+    background:var(--ink); border-top:1px solid rgba(255,255,255,.08);
+    display:flex; padding-bottom:var(--safe-bottom);
+  }
+  nav.tabbar button{
+    flex:1; background:none; border:none; color:#9DB2AE; padding:9px 2px 8px;
+    display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif; font-size:10.5px; font-weight:600;
+  }
+  nav.tabbar button .ic{font-size:19px; line-height:1;}
+  nav.tabbar button.active{color:var(--paper);}
+  nav.tabbar button.active .ic{color:var(--brass);}
+  nav.tabbar .action-flag{
+    position:absolute; top:5px; right:22%; background:var(--alpa); color:#fff;
+    font-size:9px; font-weight:700; min-width:15px; height:15px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; padding:0 3px;
+  }
+  nav.tabbar .tabbtn-wrap{position:relative; flex:1; display:flex;}
+
+  /* ===== Loading overlay ===== */
+  #loadingOverlay{
+    position:fixed; inset:0; background:rgba(15,32,38,.56); backdrop-filter:blur(3px);
+    display:none; align-items:center; justify-content:center; z-index:80; padding:20px;
+    pointer-events:none;
+  }
+  #loadingOverlay.show{display:flex; pointer-events:auto;}
+  .loading-card{
+    background:linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+    border:1px solid rgba(215,222,205,.9);
+    border-radius:20px;
+    padding:24px 24px 20px;
+    width:min(320px, 100%);
+    box-shadow:0 20px 45px rgba(0,0,0,.25);
+    text-align:center;
+    animation:cardIn .35s ease;
+  }
+  .loading-logo{
+    width:74px; height:74px; margin:0 auto 12px;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:50%;
+    background:linear-gradient(135deg, var(--ink) 0%, #2f5676 100%);
+    box-shadow:0 10px 24px rgba(24,50,74,.18);
+    padding:10px;
+    animation:logoGlow 2s ease-in-out infinite, logoFade 3s ease-in-out infinite;
+  }
+  .loading-logo img{width:100%; height:100%; object-fit:contain; display:block;}
+  .loading-title{font-family:'Fraunces',serif; font-weight:700; font-size:16px; color:var(--ink); margin:0 0 3px;}
+  .loading-subtitle{font-size:13px; color:var(--ink-soft); margin:0 0 12px; line-height:1.45;}
+  .loading-bar-track{width:100%; height:8px; border-radius:999px; background:var(--rule); overflow:hidden; margin-top:2px;}
+  .loading-bar-fill{height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg, var(--accent) 0%, var(--brass) 100%); transition:width .25s ease-out;}
+  .loading-pct{font-family:'IBM Plex Mono', monospace; font-size:12px; font-weight:700; color:var(--ink); margin-top:8px;}
+  .loading-cancel{
+    margin-top:14px; background:none; border:1px solid var(--rule); color:var(--ink-soft);
+    font-family:'IBM Plex Sans',sans-serif; font-size:11.5px; font-weight:600;
+    padding:8px 14px; border-radius:20px; cursor:pointer; display:none;
+  }
+  .loading-cancel.show{display:inline-block;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes cardIn{from{opacity:0; transform:translateY(8px) scale(.97);} to{opacity:1; transform:translateY(0) scale(1);} }
+  @keyframes logoGlow{
+    0%, 100%{
+      box-shadow:0 10px 24px rgba(24,50,74,.18), 0 0 20px rgba(189,138,46,.4);
+    }
+    50%{
+      box-shadow:0 10px 24px rgba(24,50,74,.18), 0 0 40px rgba(189,138,46,.85), 0 0 60px rgba(189,138,46,.6);
+    }
+  }
+  @keyframes logoFade{
+    0%, 100%{
+      opacity:1;
+    }
+    50%{
+      opacity:0.7;
+    }
+  }
+
+  .toast{
+    position:fixed; bottom:calc(78px + var(--safe-bottom)); left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--paper); padding:11px 18px; border-radius:9px; font-size:13px; font-weight:500;
+    box-shadow:0 6px 20px rgba(0,0,0,.25); opacity:0; pointer-events:none; transition:.25s; z-index:95; max-width:88vw;
+    display:flex; align-items:center; gap:8px; text-align:center;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .toast.err{background:var(--alpa);}
+  .toast .dot{width:7px; height:7px; border-radius:50%; background:var(--brass); flex-shrink:0;}
+
+  @media print{
+    body{padding-bottom:0; background:#fff;}
+    body > *:not(.print-shell){display:none!important;}
+    .print-shell{display:block!important; padding:16px;}
+    .card{box-shadow:none; page-break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+
+<header class="cover">
+  <div class="wrap">
+    <div class="brand">
+      <div class="mark"><img id="headerLogoImg" src="" alt="Logo SMPN 2 KARANG TENGAH"></div>
+      <div>
+        <h1>Buku Kehadiran</h1>
+        <p>&amp; Catatan Kasus Siswa</p>
+      </div>
+    </div>
+    <button id="syncBtn"><span class="dot"></span><span id="syncLabel">Sinkron</span></button>
+  </div>
+</header>
+
+<div class="config-banner" id="configBanner" style="display:none;">
+  ⚠️ URL Google Apps Script belum diisi. Buka file HTML ini, cari baris <code>const GAS_URL = "...";</code> di bagian bawah, lalu tempel Web App URL hasil deploy dari Apps Script.
+</div>
+
+<main class="wrap">
+
+  <!-- ===================== TAB: DATA SISWA ===================== -->
+  <section class="panel active" id="panel-data">
+    <div class="card">
+      <h2><span class="num">01</span>Impor dari Spreadsheet</h2>
+      <p class="hint">Unggah file .csv atau .xlsx dengan header: <b>no, nama, kelas</b>.</p>
+      <div class="dropzone" id="dropzone">
+        <strong>Ketuk untuk pilih file</strong>
+        Format .csv / .xlsx &middot; header: no, nama, kelas
+        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display:none">
+      </div>
+      <div id="importStatus" class="muted" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">02</span>Tambah Manual</h2>
+      <div class="stack">
+        <div class="field"><label>No</label><input type="text" id="manNo" placeholder="1"></div>
+        <div class="field"><label>Nama</label><input type="text" id="manNama" placeholder="Nama siswa"></div>
+        <div class="field"><label>Kelas</label><input type="text" id="manKelas" placeholder="7A"></div>
+        <button class="btn brass" id="btnAddManual">+ Tambah Siswa</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">03</span>Daftar Siswa <span class="muted" id="dsCount"></span></h2>
+      <div class="toolbar">
+        <input type="text" id="dsSearch" placeholder="Cari nama...">
+        <select id="dsKelasFilter"><option value="">Semua kelas</option></select>
+      </div>
+      <div id="dsListWrap"></div>
+      <button class="btn danger sm auto" id="btnResetAll" style="margin-top:14px;">Hapus semua data</button>
+    </div>
+  </section>
+
+  <!-- ===================== TAB: GURU PIKET ===================== -->
+  <section class="panel" id="panel-guru">
+    <div class="card">
+      <h2><span class="num">01</span>Input Kehadiran</h2>
+      <p class="hint">Semua siswa otomatis <b>Hadir</b> &mdash; ketuk status lain hanya untuk yang tidak hadir.</p>
+      <div class="stack">
+        <div class="field"><label>Tanggal</label><input type="date" id="guruTanggal"></div>
+        <div class="field"><label>Kelas</label><select id="guruKelas"><option value="">Pilih kelas</option><option value="all">Semua kelas</option></select></div>
+        <div class="btn-row">
+          <button class="btn brass" id="btnHadirSemua">✓ Hadir Semua</button>
+          <button class="btn" id="btnSimpanKehadiran">Simpan</button>
+        </div>
+      </div>
+      <div class="summary-strip" id="guruSummary"></div>
+    </div>
+
+    <div class="card" id="guruTableCard" style="display:none;">
+      <h2><span class="num">02</span>Daftar Siswa &amp; Status</h2>
+      <div id="guruTableWrap"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">03</span>Rekapitulasi Kehadiran</h2>
+      <div class="stack">
+        <div class="field"><label>Kelas</label><select id="guruRekapKelas"><option value="all">Semua kelas</option></select></div>
+        <div class="field"><label>Rentang Waktu</label>
+          <div class="btn-row">
+            <input type="date" id="guruRekapStart">
+            <input type="date" id="guruRekapEnd">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn brass" id="btnTampilkanRekap">Tampilkan Rekap</button>
+          <button class="btn secondary" id="btnCetakRekap">Cetak Laporan</button>
+        </div>
+      </div>
+      <div id="guruRekapWrap" style="margin-top:12px;"></div>
+    </div>
+  </section>
+
+  <!-- ===================== TAB: WALI KELAS ===================== -->
+  <section class="panel" id="panel-wali">
+    <div class="card">
+      <h2><span class="num">01</span>Catatan Kejadian / Kasus</h2>
+      <div class="field"><label>Kelas Wali</label><select id="waliKelas"><option value="">Pilih kelas</option></select></div>
+
+      <div id="waliForm" style="display:none; margin-top:12px;">
+        <div class="stack">
+          <div class="field">
+            <label>Siswa <span class="muted" style="text-transform:none; font-weight:400;">(bisa pilih lebih dari satu untuk kasus yang sama)</span></label>
+            <div class="checkdrop" id="kasusSiswaDropdown">
+              <button type="button" class="checkdrop-btn" id="kasusSiswaBtn">
+                <span class="cd-label placeholder" id="kasusSiswaBtnLabel">Pilih siswa...</span>
+                <span class="checkdrop-arrow">▾</span>
+              </button>
+              <div class="checkdrop-panel" id="kasusSiswaPanel">
+                <input type="text" id="kasusSiswaSearch" class="checkdrop-search" placeholder="Cari nama siswa...">
+                <div class="checkdrop-list" id="kasusSiswaList"></div>
+                <div class="checkdrop-footer">
+                  <button type="button" class="cd-clear" id="kasusSiswaClear">Bersihkan pilihan</button>
+                  <button type="button" class="cd-done" id="kasusSiswaDone">Selesai</button>
+                </div>
+              </div>
+            </div>
+            <div id="siswaPoinInfo" style="margin-top:4px;"></div>
+          </div>
+          <div class="field"><label>Tanggal</label><input type="date" id="kasusTanggal"></div>
+          <div class="field"><label>Kategori &amp; Jenis Kejadian</label>
+            <select id="kasusJenis">
+              <optgroup label="🟡 Ringan (-5 poin)">
+                <option data-kategori="Ringan" data-poin="-5">Terlambat</option>
+                <option data-kategori="Ringan" data-poin="-5">Atribut/Seragam Tidak Lengkap</option>
+                <option data-kategori="Ringan" data-poin="-5">Tidak Mengerjakan Tugas</option>
+              </optgroup>
+              <optgroup label="🟠 Sedang (-10 poin)">
+                <option data-kategori="Sedang" data-poin="-10">Bolos / Tanpa Keterangan</option>
+                <option data-kategori="Sedang" data-poin="-10">Pelanggaran Tata Tertib</option>
+                <option data-kategori="Sedang" data-poin="-10">Menggunakan HP Saat KBM</option>
+              </optgroup>
+              <optgroup label="🔴 Berat (-25 poin)">
+                <option data-kategori="Berat" data-poin="-25">Berkelahi</option>
+                <option data-kategori="Berat" data-poin="-25">Mencontek Saat Ujian</option>
+                <option data-kategori="Berat" data-poin="-25">Merokok di Lingkungan Sekolah</option>
+              </optgroup>
+              <optgroup label="⚫ Sangat Berat (-50 poin)">
+                <option data-kategori="SangatBerat" data-poin="-50">Perundungan (Bullying)</option>
+                <option data-kategori="SangatBerat" data-poin="-50">Pencurian</option>
+                <option data-kategori="SangatBerat" data-poin="-50">Membawa/Menggunakan Zat Terlarang</option>
+                <option data-kategori="SangatBerat" data-poin="-50">Tindakan Asusila</option>
+              </optgroup>
+              <optgroup label="Non-Pelanggaran">
+                <option data-kategori="Prestasi" data-poin="10">Prestasi Positif</option>
+                <option data-kategori="Netral" data-poin="0">Masalah Sosial/Emosional</option>
+                <option data-kategori="Netral" data-poin="0">Masalah Akademik</option>
+                <option data-kategori="Netral" data-poin="0">Lainnya</option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="field">
+            <label>Poin (otomatis, bisa disesuaikan)</label>
+            <input type="number" id="kasusPoin" value="-5">
+          </div>
+          <div class="field"><label>Status</label>
+            <select id="kasusStatus">
+              <option value="PerluTindakan">Perlu Tindakan</option>
+              <option value="DalamProses">Dalam Proses</option>
+              <option value="Selesai">Selesai</option>
+            </select>
+          </div>
+          <div class="field"><label>Deskripsi Kejadian</label><textarea id="kasusDeskripsi" placeholder="Ceritakan apa yang terjadi..."></textarea></div>
+          <div class="field"><label>Tindakan (opsional)</label><textarea id="kasusTindakan" placeholder="Langkah yang dilakukan..."></textarea></div>
+          <button class="btn brass" id="btnSimpanKasus">Simpan Catatan</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="waliKartuCard" style="display:none;">
+      <h2><span class="num">02</span>Perlu Tindakan &mdash; Kelas Ini</h2>
+      <div id="waliKartuWrap"></div>
+    </div>
+
+    <div class="card" id="waliListCard" style="display:none;">
+      <h2><span class="num">03</span>Riwayat Catatan</h2>
+      <div id="waliListWrap"></div>
+    </div>
+
+    <div class="card" id="waliUmpanBalikCard" style="display:none;">
+      <h2><span class="num">04</span>Umpan Balik Orang Tua Siswa <span class="muted" id="waliUmpanBalikCount"></span></h2>
+      <p class="hint">Pesan yang dikirim orang tua siswa melalui Portal Orang Tua untuk kelas ini.</p>
+      <div id="waliUmpanBalikWrap"></div>
+    </div>
+  </section>
+
+  <!-- ===================== TAB: KEPSEK / KESISWAAN ===================== -->
+  <section class="panel" id="panel-kepsek">
+    <div class="card">
+      <h2><span class="num">01</span>Rekap Kehadiran</h2>
+      <div class="field"><label>Rentang Tanggal</label>
+        <div class="btn-row">
+          <input type="date" id="kepsekTanggalStart">
+          <input type="date" id="kepsekTanggalEnd">
+        </div>
+      </div>
+      <div id="kepsekRekapWrap" style="margin-top:12px;"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">02</span>Perlu Tindakan &mdash; Semua Kelas</h2>
+      <p class="hint">Dari catatan kasus belum selesai, poin kedisiplinan rendah, dan siswa alpa &ge; 3x dalam 30 hari terakhir.</p>
+      <div id="kepsekKartuWrap"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">03</span>Peringkat Poin Kedisiplinan</h2>
+      <p class="hint">Semua siswa mulai dari 100 poin. Poin berkurang sesuai kategori pelanggaran (Ringan -5, Sedang -10, Berat -25, Sangat Berat -50) dan bisa naik lagi lewat prestasi.</p>
+      <div class="toolbar">
+        <select id="poinKelasFilter"><option value="">Semua kelas</option></select>
+      </div>
+      <div id="poinRankWrap"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">04</span>Peringkat Jumlah Alpa</h2>
+      <p class="hint">Siswa diurutkan dari jumlah Alpa terbanyak, berdasarkan rentang tanggal pada Rekap Kehadiran di atas.</p>
+      <div id="kepsekAlpaRankWrap"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">05</span>Peringkat Jumlah Sakit</h2>
+      <p class="hint">Siswa diurutkan dari jumlah Sakit terbanyak, berdasarkan rentang tanggal pada Rekap Kehadiran di atas.</p>
+      <div id="kepsekSakitRankWrap"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">06</span>Peringkat Jumlah Izin</h2>
+      <p class="hint">Siswa diurutkan dari jumlah Izin terbanyak, berdasarkan rentang tanggal pada Rekap Kehadiran di atas.</p>
+      <div id="kepsekIzinRankWrap"></div>
+    </div>
+  </section>
+
+</main>
+
+<nav class="tabbar">
+  <div class="tabbtn-wrap"><button class="tab-btn active" data-tab="data"><span class="ic">📋</span>Data Siswa</button></div>
+  <div class="tabbtn-wrap"><button class="tab-btn" data-tab="guru"><span class="ic">✅</span>Guru Piket</button></div>
+  <div class="tabbtn-wrap"><button class="tab-btn" data-tab="wali"><span class="ic">📝</span>Wali Kelas</button></div>
+  <div class="tabbtn-wrap"><button class="tab-btn" data-tab="kepsek"><span class="ic">📊</span>Kesiswaan</button><span class="action-flag" id="tabActionFlag" style="display:none;">0</span></div>
+</nav>
+
+<div id="loadingOverlay">
+  <div class="loading-card">
+    <div class="loading-logo"><img id="loadingLogoImg" src="" alt="Logo sekolah"></div>
+    <div class="loading-body">
+      <p class="loading-title"> SMPN 2 KARANG TENGAH</p>
+      <p class="loading-subtitle" id="loadingMsg">Mengambil data dari Google Sheets...</p>
+      <div class="loading-bar-track"><div class="loading-bar-fill" id="loadingBarFill"></div></div>
+      <div class="loading-pct" id="loadingPct">0%</div>
+      <button class="loading-cancel" id="loadingCancelBtn">Batalkan &amp; tutup</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+<div id="printShell" class="print-shell"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* Logo diambil langsung dari Google Drive (tautan berbagi publik) supaya file
+   HTML ini tidak perlu menyimpan gambar sebagai base64 raksasa. Jika Drive
+   memblokir hotlink suatu saat, cukup ganti FILE_ID di bawah ini. */
+const DRIVE_FILE_ID = "1xjyGbwkAi00sktGXynjUx5amBjL6eSOB";
+const LOGO_DATA_URI = "https://drive.google.com/thumbnail?id=" + DRIVE_FILE_ID + "&sz=w200";
+document.getElementById('headerLogoImg').src = LOGO_DATA_URI;
+document.getElementById('loadingLogoImg').src = LOGO_DATA_URI;
+
+/* =====================================================================
+   SCRIPT PENGGANTI — LAZY LOADING + BUG-FIX VERSION
+   Perbaikan utama pada rilis ini:
+   1. fetchWithTimeout() — semua panggilan ke Apps Script kini punya batas
+      waktu (15 detik). Sebelumnya jika fetch() menggantung (mis. deployment
+      Apps Script tidak public / koneksi terputus), overlay loading tidak
+      pernah tertutup sehingga SELURUH LAYAR termasuk tab menu di bagian
+      bawah menjadi tidak bisa ditekan.
+   2. nav.tabbar diberi z-index lebih tinggi dari #loadingOverlay, dan
+      overlay memakai pointer-events:none saat tidak tampil, sehingga tab
+      tetap bisa ditekan walau ada masalah pada proses loading.
+   3. Tombol "Batalkan & tutup" muncul otomatis jika loading berlangsung
+      lebih dari 8 detik, agar pengguna tidak pernah terjebak di overlay.
+   Semua ID elemen HTML TIDAK berubah, jadi HTML/CSS tidak perlu diubah.
+   ===================================================================== */
+
+/* =====================================================================
+   ▼▼▼  WAJIB DIISI: tempel Web App URL hasil deploy Apps Script di sini ▼▼▼
+   ===================================================================== */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzITwnucp5DwUFo6jOlN_0q1lYypP2M9Mq0Nni8GyVxHqwTmfqSLE0mmkAcPyaluAuFug/exec";
+
+/* ======================= STATE (dengan CACHE) ======================= */
+let siswaList = [];              // {no, nama, kelas, poin}  — poin dihitung SERVER-SIDE
+let actionSummary = { list: [], count: 0 }; // hasil precompute server untuk badge "Perlu Tindakan"
+let kehadiranCache = {};         // key: `${kelas}|${tanggal}`           -> array records
+let kehadiranRangeCache = {};    // key: `${kelas}|${start}|${end}`      -> array records
+let kasusCache = {};             // key: kelas (atau 'all')              -> array kasus
+let umpanBalikCache = {};        // key: kelas (atau 'all')              -> array umpan balik orang tua
+let currentGuruRecord = {};
+let selectedKasusSiswaNos = new Set(); // no siswa yang dicentang di dropdown checklist "Wali Kelas"
+const ALPA_THRESHOLD = 3;
+const STATUS_LABEL = {PerluTindakan:'Perlu Tindakan', DalamProses:'Dalam Proses', Selesai:'Selesai'};
+const KATEGORI_LABEL = {Ringan:'Ringan', Sedang:'Sedang', Berat:'Berat', SangatBerat:'Sangat Berat', Prestasi:'Prestasi', Netral:'Non-Pelanggaran'};
+const POIN_AWAL = 100;
+const todayISO = () => new Date().toISOString().slice(0,10);
+
+/* ======================= CACHE PERMANEN (localStorage) =======================
+   Selain cache di memori (variabel di atas, yang hilang setiap kali halaman
+   ditutup/di-refresh), data juga disalin ke localStorage supaya saat
+   aplikasi dibuka lagi TIDAK perlu mengunduh ulang dari Google Sheets dari
+   nol. Alur "stale-while-revalidate":
+     1. Saat init(), cache dari localStorage (jika ada) langsung dipakai
+        untuk menampilkan data SEKETIKA (tanpa menunggu jaringan).
+     2. Di belakang layar, aplikasi tetap mengambil data terbaru dari
+        Google Sheets dan memperbarui tampilan + localStorage begitu selesai.
+     3. Setiap kali ada perubahan data (tambah/hapus/edit), cache lokal ikut
+        diperbarui supaya tetap sinkron dengan apa yang ada di memori.
+   Ini membuat aplikasi terasa jauh lebih cepat dibuka kembali, sekaligus
+   tetap menampilkan data terbaru begitu jaringan tersedia. ================ */
+const LS_PREFIX = 'bkKehadiran_v1_';
+const LS_KEYS = {
+  siswaList: LS_PREFIX + 'siswaList',
+  actionSummary: LS_PREFIX + 'actionSummary',
+  kehadiranCache: LS_PREFIX + 'kehadiranCache',
+  kehadiranRangeCache: LS_PREFIX + 'kehadiranRangeCache',
+  kasusCache: LS_PREFIX + 'kasusCache',
+  umpanBalikCache: LS_PREFIX + 'umpanBalikCache',
+  savedAt: LS_PREFIX + 'savedAt'
+};
+// Cache dianggap "segar" selama 10 menit. Setelah itu data lama tetap
+// ditampilkan (supaya tidak ada layar kosong), tapi aplikasi otomatis
+// menyegarkan diri di belakang layar.
+const CACHE_FRESH_MS = 10 * 60 * 1000;
+let lastCacheSavedAt = 0;
+
+function persistCache(){
+  try{
+    localStorage.setItem(LS_KEYS.siswaList, JSON.stringify(siswaList));
+    localStorage.setItem(LS_KEYS.actionSummary, JSON.stringify(actionSummary));
+    localStorage.setItem(LS_KEYS.kehadiranCache, JSON.stringify(kehadiranCache));
+    localStorage.setItem(LS_KEYS.kehadiranRangeCache, JSON.stringify(kehadiranRangeCache));
+    localStorage.setItem(LS_KEYS.kasusCache, JSON.stringify(kasusCache));
+    localStorage.setItem(LS_KEYS.umpanBalikCache, JSON.stringify(umpanBalikCache));
+    lastCacheSavedAt = Date.now();
+    localStorage.setItem(LS_KEYS.savedAt, String(lastCacheSavedAt));
+  }catch(e){
+    // localStorage bisa gagal (mode private/incognito, kuota penuh, dll) —
+    // aplikasi tetap jalan normal, hanya saja tanpa cache permanen.
+    console.warn('Gagal menyimpan cache lokal:', e);
+  }
+}
+
+// Membaca cache lokal ke variabel di memori. Mengembalikan info { ada, umurMs }.
+function restoreCacheFromStorage(){
+  try{
+    const rawSiswa = localStorage.getItem(LS_KEYS.siswaList);
+    if(!rawSiswa) return { ada:false };
+    siswaList = JSON.parse(rawSiswa) || [];
+    actionSummary = JSON.parse(localStorage.getItem(LS_KEYS.actionSummary) || 'null') || { list:[], count:0 };
+    kehadiranCache = JSON.parse(localStorage.getItem(LS_KEYS.kehadiranCache) || 'null') || {};
+    kehadiranRangeCache = JSON.parse(localStorage.getItem(LS_KEYS.kehadiranRangeCache) || 'null') || {};
+    kasusCache = JSON.parse(localStorage.getItem(LS_KEYS.kasusCache) || 'null') || {};
+    umpanBalikCache = JSON.parse(localStorage.getItem(LS_KEYS.umpanBalikCache) || 'null') || {};
+    lastCacheSavedAt = parseInt(localStorage.getItem(LS_KEYS.savedAt) || '0', 10) || 0;
+    return { ada:true, umurMs: lastCacheSavedAt ? (Date.now() - lastCacheSavedAt) : Infinity };
+  }catch(e){
+    console.warn('Gagal membaca cache lokal, mulai dari kosong:', e);
+    return { ada:false };
+  }
+}
+
+function clearPersistedCache(){
+  try{ Object.values(LS_KEYS).forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  lastCacheSavedAt = 0;
+}
+
+/* ======================= API (GET kini pakai action + params) ======================= */
+function isConfigured(){
+  return GAS_URL && GAS_URL.indexOf('https://script.google.com') === 0;
+}
+
+/* --- FIX #1: fetch dengan timeout, supaya overlay loading tidak pernah menggantung selamanya --- */
+async function fetchWithTimeout(url, options = {}, timeoutMs = 15000){
+  const controller = new AbortController();
+  const timer = setTimeout(()=>controller.abort(), timeoutMs);
+  try{
+    return await fetch(url, { ...options, signal: controller.signal });
+  }catch(err){
+    if(err.name === 'AbortError'){
+      throw new Error('Waktu permintaan habis (15 detik). Periksa koneksi internet, atau pastikan Web App Apps Script sudah di-deploy dengan akses "Anyone", lalu coba lagi.');
+    }
+    throw err;
+  }finally{
+    clearTimeout(timer);
+  }
+}
+
+async function apiGet(action, params = {}){
+  const qs = new URLSearchParams({ action, ...params }).toString();
+  const res = await fetchWithTimeout(GAS_URL + '?' + qs);
+  let json;
+  try{ json = await res.json(); }
+  catch(e){ throw new Error('Respons server tidak valid (bukan JSON). Cek deployment Apps Script.'); }
+  if(!json.ok) throw new Error(json.error || 'Gagal memuat data');
+  return json.data;
+}
+
+async function apiPost(action, payload){
+  const res = await fetchWithTimeout(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ action, payload })
+  });
+  let json;
+  try{ json = await res.json(); }
+  catch(e){ throw new Error('Respons server tidak valid (bukan JSON). Cek deployment Apps Script.'); }
+  if(!json.ok) throw new Error(json.error || 'Gagal menyimpan data');
+  return json.data;
+}
+
+/* ======================= LOADER + CACHE (inti lazy loading) ======================= */
+async function loadSiswa(force){
+  if(siswaList.length && !force) return siswaList;
+  siswaList = await apiGet('getSiswa') || [];
+  persistCache();
+  return siswaList;
+}
+
+async function loadActionSummary(force){
+  if(actionSummary.loaded && !force) return actionSummary;
+  const data = await apiGet('getActionSummary');
+  actionSummary = { list: data.list || [], count: data.count || (data.list||[]).length, loaded: true };
+  persistCache();
+  return actionSummary;
+}
+
+// Kehadiran satu tanggal (kelas boleh nama kelas spesifik atau 'all')
+async function loadKehadiranByDate(tanggal, kelas){
+  const key = `${kelas}|${tanggal}`;
+  if(kehadiranCache[key]) return kehadiranCache[key];
+  const data = await apiGet('getKehadiran', { tanggal, kelas });
+  kehadiranCache[key] = data || [];
+  persistCache();
+  return kehadiranCache[key];
+}
+
+// Kehadiran rentang tanggal (untuk rekap) — kelas boleh 'all'
+async function loadKehadiranRange(kelas, start, end){
+  const key = `${kelas}|${start}|${end}`;
+  if(kehadiranRangeCache[key]) return kehadiranRangeCache[key];
+  const data = await apiGet('getKehadiranRange', { kelas, start, end });
+  kehadiranRangeCache[key] = data || [];
+  persistCache();
+  return kehadiranRangeCache[key];
+}
+
+// Kasus per kelas (atau 'all' kalau benar-benar perlu semua)
+async function loadKasus(kelas, force){
+  if(kasusCache[kelas] && !force) return kasusCache[kelas];
+  const data = await apiGet('getKasus', { kelas });
+  kasusCache[kelas] = data || [];
+  persistCache();
+  return kasusCache[kelas];
+}
+
+// Umpan balik orang tua per kelas (atau 'all')
+async function loadUmpanBalik(kelas, force){
+  if(umpanBalikCache[kelas] && !force) return umpanBalikCache[kelas];
+  const data = await apiGet('getUmpanBalik', { kelas });
+  umpanBalikCache[kelas] = data || [];
+  persistCache();
+  return umpanBalikCache[kelas];
+}
+
+function invalidateAfterMutation({ siswa, kehadiran, kasus, actionSum } = {}){
+  if(kehadiran){ kehadiranCache = {}; kehadiranRangeCache = {}; }
+  if(kasus){ kasusCache = {}; }
+  if(kehadiran || kasus) persistCache();
+  const jobs = [];
+  if(siswa) jobs.push(loadSiswa(true));
+  if(actionSum !== false) jobs.push(loadActionSummary(true).then(renderHeaderStats));
+  return Promise.all(jobs);
+}
+
+function getStudentPoin(no, kelas){
+  const s = siswaList.find(x => String(x.no) === String(no) && x.kelas === kelas);
+  return s && typeof s.poin === 'number' ? s.poin : POIN_AWAL;
+}
+
+/* ======================= UI: sync indicator, loading, toast ======================= */
+
+function setSync(state, label){
+  const btn = document.getElementById('syncBtn');
+  btn.classList.remove('busy','err');
+  if(state) btn.classList.add(state);
+  document.getElementById('syncLabel').textContent = label;
+}
+
+let loadingProgressTimer = null;
+let loadingCancelTimer = null;
+function setLoadingPct(p){
+  const pct = Math.max(0, Math.min(100, Math.round(p)));
+  const fill = document.getElementById('loadingBarFill');
+  const lbl = document.getElementById('loadingPct');
+  if(fill) fill.style.width = pct + '%';
+  if(lbl) lbl.textContent = pct + '%';
+}
+function showLoading(msg){
+  document.getElementById('loadingMsg').textContent = msg || 'Memuat...';
+  document.getElementById('loadingOverlay').classList.add('show');
+  setLoadingPct(0);
+  clearInterval(loadingProgressTimer);
+  clearTimeout(loadingCancelTimer);
+  const cancelBtn = document.getElementById('loadingCancelBtn');
+  cancelBtn.classList.remove('show');
+  let pct = 0;
+  loadingProgressTimer = setInterval(()=>{
+    const step = pct < 70 ? 10 : (pct < 90 ? 3 : 1);
+    pct = Math.min(95, pct + step);
+    setLoadingPct(pct);
+  }, 120); // interval dipercepat karena payload sekarang jauh lebih kecil
+
+  /* --- FIX #3: jika loading > 8 detik, tampilkan tombol "Batalkan & tutup"
+     supaya pengguna tidak pernah terjebak walau ada kondisi tak terduga --- */
+  loadingCancelTimer = setTimeout(()=>{
+    cancelBtn.classList.add('show');
+  }, 8000);
+}
+function hideLoading(){
+  clearInterval(loadingProgressTimer);
+  clearTimeout(loadingCancelTimer);
+  setLoadingPct(100);
+  setTimeout(()=>{
+    document.getElementById('loadingOverlay').classList.remove('show');
+    document.getElementById('loadingCancelBtn').classList.remove('show');
+    setLoadingPct(0);
+  }, 200);
+}
+document.getElementById('loadingCancelBtn').addEventListener('click', ()=>{
+  hideLoading();
+  toast('Proses dibatalkan. Coba tekan Sinkron lagi bila perlu.', true);
+});
+
+let toastTimer;
+function toast(msg, isErr){
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.toggle('err', !!isErr);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+// Tombol "Sinkron" di header = full refresh manual (bersihkan semua cache)
+document.getElementById('syncBtn').addEventListener('click', async ()=>{
+  if(!isConfigured()){
+    document.getElementById('configBanner').style.display = 'block';
+    setSync('err', 'Belum diatur');
+    return;
+  }
+  kehadiranCache = {}; kehadiranRangeCache = {}; kasusCache = {}; umpanBalikCache = {};
+  showLoading('Menyinkronkan ulang...');
+  setSync('busy', 'Sinkron...');
+  try{
+    await Promise.all([loadSiswa(true), loadActionSummary(true)]);
+    persistCache();
+    setSync('', 'Tersinkron');
+    await rerenderActiveTab();
+  }catch(err){
+    setSync('err', 'Gagal sinkron');
+    toast('Gagal sinkron: ' + err.message, true);
+  }finally{ hideLoading(); }
+});
+
+/* ======================= UTIL ======================= */
+function uniqueKelas(){ return [...new Set(siswaList.map(s=>s.kelas).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'id')); }
+function studentsInKelas(kelas){ return siswaList.filter(s=>s.kelas===kelas).sort((a,b)=>(a.no+'').localeCompare(b.no+'','id',{numeric:true})); }
+function escapeHtml(str){ return String(str??'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function fmtTanggal(iso){ if(!iso) return ''; const d = new Date(iso+'T00:00:00'); return d.toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}); }
+function fmtTimestamp(ts){
+  if(!ts) return '';
+  const d = new Date(String(ts).replace(' ', 'T'));
+  if(isNaN(d.getTime())) return String(ts);
+  return d.toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'}) + ' ' + d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+}
+function poinBadgeClass(poin){
+  if(poin>=80) return 'good';
+  if(poin>=50) return 'warn';
+  return 'bad';
+}
+function poinBadgeHtml(no, kelas){
+  const poin = getStudentPoin(no, kelas);
+  return `<span class="poin-badge ${poinBadgeClass(poin)}">⬤ ${poin}/100</span>`;
+}
+function studentKey(student){ return `${student.kelas}::${student.no}`; }
+
+/* ======================= TABS (memicu lazy load sesuai tab) ======================= */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+    window.scrollTo({top:0, behavior:'instant'});
+    await loadTabData(btn.dataset.tab);
+  });
+});
+
+async function loadTabData(tab){
+  if(tab === 'data'){
+    renderDataSiswaList();
+  }
+  if(tab === 'guru'){
+    renderGuruKelasOptions();
+    const kelas = document.getElementById('guruKelas').value;
+    if(kelas){
+      showLoading('Mengambil kehadiran ' + (kelas==='all'?'semua kelas':kelas) + '...');
+      try{ await loadCurrentGuruRecord(); renderGuruTable(); }
+      catch(err){ toast('Gagal memuat kehadiran: '+err.message, true); }
+      finally{ hideLoading(); }
+    }
+  }
+  if(tab === 'wali'){
+    renderWaliKelasOptions();
+    const kelas = document.getElementById('waliKelas').value;
+    if(kelas) await renderWaliPanel();
+  }
+  if(tab === 'kepsek'){
+    await renderKepsekAll();
+  }
+}
+async function rerenderActiveTab(){
+  const activeBtn = document.querySelector('.tab-btn.active');
+  refreshHeaderScaffolding();
+  if(activeBtn) await loadTabData(activeBtn.dataset.tab);
+}
+function refreshHeaderScaffolding(){
+  renderHeaderStats();
+  renderKelasFilterOptions();
+  renderGuruKelasOptions();
+  renderWaliKelasOptions();
+}
+
+/* ======================= TAB DATA SISWA ======================= */
+function renderKelasFilterOptions(){
+  const sel = document.getElementById('dsKelasFilter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Semua kelas</option>' + uniqueKelas().map(k=>`<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`).join('');
+  sel.value = cur;
+}
+function renderDataSiswaList(){
+  const wrap = document.getElementById('dsListWrap');
+  const search = document.getElementById('dsSearch').value.trim().toLowerCase();
+  const kelasFilter = document.getElementById('dsKelasFilter').value;
+  let list = siswaList.filter(s=>{
+    if(kelasFilter && s.kelas!==kelasFilter) return false;
+    if(search && !s.nama.toLowerCase().includes(search)) return false;
+    return true;
+  }).sort((a,b)=> a.kelas.localeCompare(b.kelas,'id') || (a.no+'').localeCompare(b.no+'','id',{numeric:true}));
+
+  document.getElementById('dsCount').textContent = `(${list.length}/${siswaList.length})`;
+
+  if(list.length===0){
+    wrap.innerHTML = `<div class="empty-state"><span class="ico">📚</span>Belum ada data siswa.</div>`;
+    return;
+  }
+  wrap.innerHTML = list.map(s=>`
+    <div class="li-item">
+      <div class="no">${escapeHtml(s.no)}</div>
+      <div class="nm"><div class="name">${escapeHtml(s.nama)}</div><div class="kelas">${escapeHtml(s.kelas)}</div></div>
+      ${poinBadgeHtml(s.no, s.kelas)}
+      <button class="btn secondary sm auto" data-del-no="${escapeHtml(s.no)}" data-del-kelas="${escapeHtml(s.kelas)}">Hapus</button>
+    </div>
+  `).join('');
+
+  wrap.querySelectorAll('[data-del-no]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const no = btn.dataset.delNo, kelas = btn.dataset.delKelas;
+      showLoading('Menghapus siswa...');
+      try{
+        await apiPost('deleteSiswa', {no, kelas});
+        siswaList = siswaList.filter(s=>!(String(s.no)===no && s.kelas===kelas));
+        persistCache();
+        renderDataSiswaList();
+        invalidateAfterMutation({ actionSum: true });
+        toast('Siswa dihapus');
+      }catch(err){ toast('Gagal menghapus: '+err.message, true); }
+      finally{ hideLoading(); }
+    });
+  });
+}
+document.getElementById('dsSearch').addEventListener('input', renderDataSiswaList);
+document.getElementById('dsKelasFilter').addEventListener('change', renderDataSiswaList);
+
+document.getElementById('btnAddManual').addEventListener('click', async ()=>{
+  const no = document.getElementById('manNo').value.trim();
+  const nama = document.getElementById('manNama').value.trim();
+  const kelas = document.getElementById('manKelas').value.trim();
+  if(!no || !nama || !kelas){ toast('Lengkapi no, nama, dan kelas', true); return; }
+  showLoading('Menyimpan siswa...');
+  try{
+    await apiPost('addSiswa', {no, nama, kelas});
+    siswaList = siswaList.filter(s=>!(String(s.no)===no && s.kelas===kelas));
+    siswaList.push({no, nama, kelas, poin: POIN_AWAL});
+    persistCache();
+    document.getElementById('manNo').value=''; document.getElementById('manNama').value=''; document.getElementById('manKelas').value='';
+    renderKelasFilterOptions(); renderDataSiswaList(); renderGuruKelasOptions(); renderWaliKelasOptions();
+    invalidateAfterMutation({ actionSum: true });
+    toast('Siswa ditambahkan');
+  }catch(err){ toast('Gagal menambah: '+err.message, true); }
+  finally{ hideLoading(); }
+});
+
+document.getElementById('btnResetAll').addEventListener('click', async ()=>{
+  if(!confirm('Yakin hapus SEMUA data siswa, kehadiran, dan catatan kasus di Google Sheets? Tindakan ini tidak bisa dibatalkan.')) return;
+  showLoading('Menghapus semua data...');
+  try{
+    await apiPost('resetAll', {});
+    siswaList = []; kehadiranCache = {}; kehadiranRangeCache = {}; kasusCache = {}; umpanBalikCache = {};
+    actionSummary = { list: [], count: 0, loaded: true };
+    clearPersistedCache();
+    refreshHeaderScaffolding(); renderDataSiswaList();
+    toast('Semua data telah dihapus');
+  }catch(err){ toast('Gagal menghapus: '+err.message, true); }
+  finally{ hideLoading(); }
+});
+
+/* ---- import spreadsheet ---- */
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+dropzone.addEventListener('click', ()=>fileInput.click());
+dropzone.addEventListener('dragover', e=>{e.preventDefault(); dropzone.classList.add('drag');});
+dropzone.addEventListener('dragleave', ()=>dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', e=>{e.preventDefault(); dropzone.classList.remove('drag'); if(e.dataTransfer.files.length) handleImportFile(e.dataTransfer.files[0]);});
+fileInput.addEventListener('change', e=>{ if(e.target.files.length) handleImportFile(e.target.files[0]); fileInput.value=''; });
+
+function handleImportFile(file){
+  const statusEl = document.getElementById('importStatus');
+  statusEl.textContent = 'Membaca file...';
+  const reader = new FileReader();
+  reader.onload = async (evt)=>{
+    try{
+      const data = new Uint8Array(evt.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+      const cleanList = [];
+      let skipped = 0;
+      rows.forEach(row=>{
+        const norm = {};
+        Object.keys(row).forEach(k=> norm[k.trim().toLowerCase()] = row[k]);
+        const no = String(norm.no ?? '').trim();
+        const nama = String(norm.nama ?? '').trim();
+        const kelas = String(norm.kelas ?? '').trim();
+        if(!no || !nama || !kelas){ skipped++; return; }
+        cleanList.push({no, nama, kelas});
+      });
+      if(cleanList.length===0){ statusEl.textContent = 'Tidak ada baris valid ditemukan.'; return; }
+      showLoading(`Mengunggah ${cleanList.length} siswa ke Google Sheets...`);
+      const result = await apiPost('importSiswa', cleanList);
+      await loadSiswa(true);
+      refreshHeaderScaffolding(); renderDataSiswaList();
+      invalidateAfterMutation({ actionSum: true });
+      statusEl.textContent = `Selesai: ${result.added} ditambahkan, ${result.updated} diperbarui, ${skipped} dilewati.`;
+      toast('Impor data siswa berhasil');
+    }catch(err){
+      console.error(err);
+      statusEl.textContent = 'Gagal mengimpor: ' + err.message;
+      toast('Gagal impor: '+err.message, true);
+    }finally{ hideLoading(); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ======================= TAB GURU PIKET ======================= */
+function renderGuruKelasOptions(){
+  const sel = document.getElementById('guruKelas');
+  const reportSel = document.getElementById('guruRekapKelas');
+  const cur = sel.value;
+  const reportCur = reportSel ? reportSel.value : 'all';
+  const baseOptions = ['<option value="">Pilih kelas</option>', '<option value="all">Semua kelas</option>'];
+  const classOptions = uniqueKelas().map(k=>`<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`).join('');
+  const options = baseOptions.join('') + classOptions;
+  sel.innerHTML = options;
+  if(cur === 'all') sel.value = 'all'; else if(uniqueKelas().includes(cur)) sel.value = cur; else sel.value = '';
+  if(reportSel){
+    reportSel.innerHTML = options;
+    if(reportCur === 'all') reportSel.value = 'all'; else if(uniqueKelas().includes(reportCur)) reportSel.value = reportCur; else reportSel.value = 'all';
+  }
+}
+document.getElementById('guruTanggal').value = todayISO();
+const defaultRekapStart = () => {
+  const d = new Date(); d.setDate(d.getDate()-30); return d.toISOString().slice(0,10);
+};
+document.getElementById('guruRekapStart').value = defaultRekapStart();
+document.getElementById('guruRekapEnd').value = todayISO();
+
+async function loadCurrentGuruRecord(){
+  const kelas = document.getElementById('guruKelas').value;
+  const tanggal = document.getElementById('guruTanggal').value;
+  currentGuruRecord = {};
+  if(!tanggal || !kelas) return;
+  const records = await loadKehadiranByDate(tanggal, kelas);
+  const existing = {};
+  records.forEach(r => existing[`${r.kelas}::${r.no}`] = r.status);
+  const students = kelas === 'all' ? siswaList : studentsInKelas(kelas);
+  students.forEach(s=>{ currentGuruRecord[studentKey(s)] = existing[studentKey(s)] || 'Hadir'; });
+}
+
+function renderGuruTable(){
+  const kelas = document.getElementById('guruKelas').value;
+  const card = document.getElementById('guruTableCard');
+  const wrap = document.getElementById('guruTableWrap');
+  if(!kelas){ card.style.display='none'; document.getElementById('guruSummary').innerHTML=''; return; }
+  const students = kelas === 'all' ? siswaList : studentsInKelas(kelas);
+  card.style.display='block';
+  if(students.length===0){
+    wrap.innerHTML = `<div class="empty-state"><span class="ico">👤</span>Belum ada siswa di kelas ini.</div>`;
+    document.getElementById('guruSummary').innerHTML=''; return;
+  }
+  const statuses = ['Hadir','Sakit','Izin','Alpa'];
+  wrap.innerHTML = students.map(s=>`
+    <div class="status-row">
+      <div class="who"><div class="name">${escapeHtml(s.nama)}</div><div class="no">No. ${escapeHtml(s.no)} &middot; ${escapeHtml(s.kelas)}</div></div>
+      <div class="status-btns" data-key="${escapeHtml(studentKey(s))}">
+        ${statuses.map(st=>`<button class="st-btn ${currentGuruRecord[studentKey(s)]===st?'active':''}" data-st="${st}">${st==='Hadir'?'H':st==='Sakit'?'S':st==='Izin'?'I':'A'}</button>`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  wrap.querySelectorAll('.status-btns').forEach(group=>{
+    const key = group.dataset.key;
+    group.querySelectorAll('.st-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        currentGuruRecord[key] = btn.dataset.st;
+        group.querySelectorAll('.st-btn').forEach(b=>b.classList.toggle('active', b===btn));
+        renderGuruSummary();
+      });
+    });
+  });
+  renderGuruSummary();
+}
+
+function renderGuruSummary(){
+  const counts = {Hadir:0, Sakit:0, Izin:0, Alpa:0};
+  Object.values(currentGuruRecord).forEach(st=>{ if(counts[st]!==undefined) counts[st]++; });
+  document.getElementById('guruSummary').innerHTML = Object.keys(counts).map(st=>`
+    <div class="summary-chip ${st}"><div class="n">${counts[st]}</div><div class="l">${st}</div></div>
+  `).join('');
+}
+
+async function renderGuruRekap(){
+  const kelas = document.getElementById('guruRekapKelas').value || 'all';
+  const start = document.getElementById('guruRekapStart').value;
+  const end = document.getElementById('guruRekapEnd').value;
+  const wrap = document.getElementById('guruRekapWrap');
+  if(!start || !end){ wrap.innerHTML = '<div class="empty-state"><span class="ico">📅</span>Isi rentang tanggal terlebih dahulu.</div>'; return; }
+  if(new Date(start+'T00:00:00') > new Date(end+'T00:00:00')){ wrap.innerHTML = '<div class="empty-state"><span class="ico">⚠️</span>Rentang tanggal tidak valid.</div>'; return; }
+
+  wrap.innerHTML = '<div class="empty-state"><span class="ico">⏳</span>Memuat rekap...</div>';
+  let filtered;
+  try{ filtered = await loadKehadiranRange(kelas, start, end); }
+  catch(err){ wrap.innerHTML = `<div class="empty-state"><span class="ico">⚠️</span>Gagal memuat: ${escapeHtml(err.message)}</div>`; return; }
+
+  const relevantStudents = kelas === 'all' ? siswaList : studentsInKelas(kelas);
+  const counts = {Hadir:0, Sakit:0, Izin:0, Alpa:0};
+  filtered.forEach(r=>{ if(counts[r.status] !== undefined) counts[r.status]++; });
+
+  const perStudentMap = {};
+  relevantStudents.forEach(s=>{ perStudentMap[`${s.kelas}::${s.no}`] = {nama:s.nama, kelas:s.kelas, no:s.no, Hadir:0, Sakit:0, Izin:0, Alpa:0}; });
+  filtered.forEach(r=>{
+    const key = `${r.kelas}::${r.no}`;
+    if(perStudentMap[key] && counts[r.status] !== undefined){ perStudentMap[key][r.status] = (perStudentMap[key][r.status] || 0) + 1; }
+  });
+
+  const perStudentRows = Object.values(perStudentMap).sort((a,b)=> a.kelas.localeCompare(b.kelas,'id') || (a.no+'').localeCompare(b.no+'','id',{numeric:true})).map(item=>`
+    <div class="status-row stack" style="padding:10px 4px;">
+      <div class="who">
+        <div class="name">${escapeHtml(item.nama)}</div>
+        <div class="no">No. ${escapeHtml(item.no)} &middot; ${escapeHtml(item.kelas)}</div>
+      </div>
+      <div class="summary-strip" style="gap:6px;">
+        <div class="summary-chip Hadir"><div class="n">${item.Hadir}</div><div class="l">Hadir</div></div>
+        <div class="summary-chip Sakit"><div class="n">${item.Sakit}</div><div class="l">Sakit</div></div>
+        <div class="summary-chip Izin"><div class="n">${item.Izin}</div><div class="l">Izin</div></div>
+        <div class="summary-chip Alpa"><div class="n">${item.Alpa}</div><div class="l">Alpa</div></div>
+      </div>
+    </div>
+  `).join('');
+
+  wrap.innerHTML = `
+    <div class="card" style="margin-bottom:0;">
+      <h3 style="margin:0 0 8px; font-size:15px;">${kelas === 'all' ? 'Semua kelas' : kelas}</h3>
+      <p class="muted" style="margin:0 0 10px;">Periode ${fmtTanggal(start)} &ndash; ${fmtTanggal(end)} · Total entri ${filtered.length}</p>
+      <div class="report-grid">
+        <div class="summary-chip Hadir"><div class="n">${counts.Hadir}</div><div class="l">Hadir</div></div>
+        <div class="summary-chip Sakit"><div class="n">${counts.Sakit}</div><div class="l">Sakit</div></div>
+        <div class="summary-chip Izin"><div class="n">${counts.Izin}</div><div class="l">Izin</div></div>
+        <div class="summary-chip Alpa"><div class="n">${counts.Alpa}</div><div class="l">Alpa</div></div>
+      </div>
+      <div style="margin-top:12px;">
+        <div class="muted" style="margin-bottom:6px;">Rekap per siswa</div>
+        ${perStudentRows}
+      </div>
+    </div>
+  `;
+}
+
+async function printGuruRekap(){
+  const shell = document.getElementById('printShell');
+  const selectedKelas = document.getElementById('guruRekapKelas').value || 'all';
+  const start = document.getElementById('guruRekapStart').value;
+  const end = document.getElementById('guruRekapEnd').value;
+  const classes = selectedKelas === 'all' ? uniqueKelas() : [selectedKelas];
+
+  showLoading('Menyiapkan laporan cetak...');
+  try{
+    // satu fetch per kelas yang dicetak (masing-masing dicache, tidak diulang kalau sudah pernah dibuka di Rekap)
+    const dataPerKelas = {};
+    for(const kelas of classes){ dataPerKelas[kelas] = await loadKehadiranRange(kelas, start, end); }
+
+    const sections = classes.map(kelas=>{
+      const relevantStudents = studentsInKelas(kelas);
+      const filtered = dataPerKelas[kelas];
+      const counts = {Hadir:0, Sakit:0, Izin:0, Alpa:0};
+      filtered.forEach(r=>{ if(counts[r.status] !== undefined) counts[r.status]++; });
+
+      const perStudentMap = {};
+      relevantStudents.forEach(s=>{ perStudentMap[`${s.kelas}::${s.no}`] = {nama:s.nama, kelas:s.kelas, no:s.no, Hadir:0, Sakit:0, Izin:0, Alpa:0}; });
+      filtered.forEach(r=>{
+        const key = `${r.kelas}::${r.no}`;
+        if(perStudentMap[key]) perStudentMap[key][r.status] = (perStudentMap[key][r.status] || 0) + 1;
+      });
+
+      const perStudentRows = Object.values(perStudentMap).sort((a,b)=> (a.no+'').localeCompare(b.no+'','id',{numeric:true})).map(item=>`
+        <div class="status-row stack" style="padding:10px 4px; border-bottom:1px solid #D7DECD;">
+          <div class="who">
+            <div class="name">${escapeHtml(item.nama)}</div>
+            <div class="no">No. ${escapeHtml(item.no)} &middot; ${escapeHtml(item.kelas)}</div>
+          </div>
+          <div class="summary-strip" style="gap:6px;">
+            <div class="summary-chip Hadir"><div class="n">${item.Hadir}</div><div class="l">Hadir</div></div>
+            <div class="summary-chip Sakit"><div class="n">${item.Sakit}</div><div class="l">Sakit</div></div>
+            <div class="summary-chip Izin"><div class="n">${item.Izin}</div><div class="l">Izin</div></div>
+            <div class="summary-chip Alpa"><div class="n">${item.Alpa}</div><div class="l">Alpa</div></div>
+          </div>
+        </div>
+      `).join('');
+
+      return `
+        <div class="card" style="margin:0 0 18px; page-break-after:always;">
+          <h2 style="margin-bottom:8px;">Laporan Rekap Kehadiran - ${escapeHtml(kelas)}</h2>
+          <p class="muted" style="margin:0 0 10px;">Periode ${fmtTanggal(start)} &ndash; ${fmtTanggal(end)} · Total entri ${filtered.length}</p>
+          <div class="report-grid">
+            <div class="summary-chip Hadir"><div class="n">${counts.Hadir}</div><div class="l">Hadir</div></div>
+            <div class="summary-chip Sakit"><div class="n">${counts.Sakit}</div><div class="l">Sakit</div></div>
+            <div class="summary-chip Izin"><div class="n">${counts.Izin}</div><div class="l">Izin</div></div>
+            <div class="summary-chip Alpa"><div class="n">${counts.Alpa}</div><div class="l">Alpa</div></div>
+          </div>
+          <div style="margin-top:12px;">
+            <div class="muted" style="margin-bottom:6px;">Rekap per siswa</div>
+            ${perStudentRows}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    shell.innerHTML = sections;
+    window.print();
+    setTimeout(()=> shell.innerHTML = '', 300);
+  }catch(err){
+    toast('Gagal menyiapkan cetak: '+err.message, true);
+  }finally{ hideLoading(); }
+}
+
+document.getElementById('guruKelas').addEventListener('change', async ()=>{
+  showLoading('Mengambil kehadiran...');
+  try{ await loadCurrentGuruRecord(); renderGuruTable(); }
+  catch(err){ toast('Gagal memuat: '+err.message, true); }
+  finally{ hideLoading(); }
+});
+document.getElementById('guruTanggal').addEventListener('change', async ()=>{
+  showLoading('Mengambil kehadiran...');
+  try{ await loadCurrentGuruRecord(); renderGuruTable(); }
+  catch(err){ toast('Gagal memuat: '+err.message, true); }
+  finally{ hideLoading(); }
+});
+document.getElementById('guruRekapKelas').addEventListener('change', renderGuruRekap);
+document.getElementById('guruRekapStart').addEventListener('change', renderGuruRekap);
+document.getElementById('guruRekapEnd').addEventListener('change', renderGuruRekap);
+document.getElementById('btnTampilkanRekap').addEventListener('click', renderGuruRekap);
+document.getElementById('btnCetakRekap').addEventListener('click', printGuruRekap);
+
+document.getElementById('btnHadirSemua').addEventListener('click', ()=>{
+  const kelas = document.getElementById('guruKelas').value;
+  if(!kelas){ toast('Pilih kelas terlebih dahulu', true); return; }
+  Object.keys(currentGuruRecord).forEach(key=> currentGuruRecord[key] = 'Hadir');
+  renderGuruTable();
+  toast('Semua siswa ditandai Hadir');
+});
+
+document.getElementById('btnSimpanKehadiran').addEventListener('click', async ()=>{
+  const kelas = document.getElementById('guruKelas').value;
+  const tanggal = document.getElementById('guruTanggal').value;
+  if(!kelas || !tanggal){ toast('Pilih kelas dan tanggal', true); return; }
+  const students = kelas === 'all' ? siswaList : studentsInKelas(kelas);
+  const records = students.map(s=>({no:s.no, nama:s.nama, kelas:s.kelas, status:currentGuruRecord[studentKey(s)]||'Hadir'}));
+  showLoading('Menyimpan kehadiran...');
+  try{
+    await apiPost('saveKehadiran', {tanggal, kelas, records});
+    /* FIX: sebelumnya hanya key `${kelas}|${tanggal}` yang diperbarui di cache,
+       sehingga key `all|${tanggal}` (dipakai tab Kesiswaan untuk rekap semua
+       kelas) bisa tetap berisi data lama/kosong jika sudah pernah di-cache
+       sebelum penyimpanan ini. Solusinya: kosongkan SELURUH cache kehadiran
+       (per-kelas maupun 'all') setiap kali ada penyimpanan, supaya semua tab
+       selalu mengambil data terbaru dari server. */
+    kehadiranCache = {};
+    kehadiranRangeCache = {};
+    persistCache();
+    await renderGuruRekap();
+    invalidateAfterMutation({ actionSum: true }); // badge "perlu tindakan" bisa berubah karena Alpa
+    toast(`Kehadiran ${kelas === 'all' ? 'semua kelas' : kelas} - ${fmtTanggal(tanggal)} tersimpan`);
+  }catch(err){ toast('Gagal menyimpan: '+err.message, true); }
+  finally{ hideLoading(); }
+});
+
+/* ======================= TAB WALI KELAS ======================= */
+function renderWaliKelasOptions(){
+  const sel = document.getElementById('waliKelas');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Pilih kelas</option>' + uniqueKelas().map(k=>`<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`).join('');
+  if(uniqueKelas().includes(cur)) sel.value = cur;
+}
+document.getElementById('kasusTanggal').value = todayISO();
+document.getElementById('waliKelas').addEventListener('change', ()=>{ renderWaliPanel(); });
+
+function syncPoinFromJenis(){
+  const opt = document.getElementById('kasusJenis').selectedOptions[0];
+  if(!opt) return;
+  document.getElementById('kasusPoin').value = opt.dataset.poin || 0;
+}
+document.getElementById('kasusJenis').addEventListener('change', syncPoinFromJenis);
+
+/* ---- Dropdown checklist siswa (multi-pilih) untuk form kasus ---- */
+function getSelectedSiswaNos(){
+  return [...selectedKasusSiswaNos];
+}
+
+function updateKasusSiswaBtnLabel(){
+  const kelas = document.getElementById('waliKelas').value;
+  const labelEl = document.getElementById('kasusSiswaBtnLabel');
+  const n = selectedKasusSiswaNos.size;
+  if(n === 0){
+    labelEl.textContent = 'Pilih siswa...';
+    labelEl.classList.add('placeholder');
+    return;
+  }
+  labelEl.classList.remove('placeholder');
+  if(n === 1){
+    const no = [...selectedKasusSiswaNos][0];
+    const s = siswaList.find(x=>x.kelas===kelas && String(x.no)===String(no));
+    labelEl.textContent = s ? s.nama : '1 siswa dipilih';
+  }else{
+    labelEl.textContent = `${n} siswa dipilih`;
+  }
+}
+
+function renderKasusSiswaList(students, filterText){
+  const listEl = document.getElementById('kasusSiswaList');
+  const q = (filterText || '').trim().toLowerCase();
+  const filtered = q ? students.filter(s=> s.nama.toLowerCase().includes(q)) : students;
+  if(filtered.length === 0){
+    listEl.innerHTML = '<div class="checkdrop-empty">Tidak ada siswa ditemukan</div>';
+    return;
+  }
+  listEl.innerHTML = filtered.map(s=>`
+    <label class="checkdrop-item">
+      <input type="checkbox" value="${escapeHtml(s.no)}" ${selectedKasusSiswaNos.has(String(s.no)) ? 'checked' : ''}>
+      <span class="cd-name">${escapeHtml(s.nama)}</span>
+      <span class="cd-no">No.${escapeHtml(s.no)}</span>
+    </label>
+  `).join('');
+  listEl.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      if(cb.checked) selectedKasusSiswaNos.add(cb.value); else selectedKasusSiswaNos.delete(cb.value);
+      updateKasusSiswaBtnLabel();
+      renderSiswaPoinInfo();
+    });
+  });
+}
+
+function resetKasusSiswaDropdown(){
+  const kelas = document.getElementById('waliKelas').value;
+  selectedKasusSiswaNos = new Set();
+  document.getElementById('kasusSiswaSearch').value = '';
+  renderKasusSiswaList(studentsInKelas(kelas), '');
+  updateKasusSiswaBtnLabel();
+  document.getElementById('kasusSiswaDropdown').classList.remove('open');
+}
+
+document.getElementById('kasusSiswaBtn').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  const kelas = document.getElementById('waliKelas').value;
+  if(!kelas){ toast('Pilih kelas wali terlebih dahulu', true); return; }
+  document.getElementById('kasusSiswaDropdown').classList.toggle('open');
+});
+document.getElementById('kasusSiswaSearch').addEventListener('click', (e)=> e.stopPropagation());
+document.getElementById('kasusSiswaSearch').addEventListener('input', (e)=>{
+  const kelas = document.getElementById('waliKelas').value;
+  renderKasusSiswaList(studentsInKelas(kelas), e.target.value);
+});
+document.getElementById('kasusSiswaClear').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  selectedKasusSiswaNos = new Set();
+  const kelas = document.getElementById('waliKelas').value;
+  renderKasusSiswaList(studentsInKelas(kelas), document.getElementById('kasusSiswaSearch').value);
+  updateKasusSiswaBtnLabel();
+  renderSiswaPoinInfo();
+});
+document.getElementById('kasusSiswaDone').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  document.getElementById('kasusSiswaDropdown').classList.remove('open');
+});
+document.addEventListener('click', (e)=>{
+  const dd = document.getElementById('kasusSiswaDropdown');
+  if(dd && dd.classList.contains('open') && !dd.contains(e.target)){
+    dd.classList.remove('open');
+  }
+});
+
+function renderSiswaPoinInfo(){
+  const kelas = document.getElementById('waliKelas').value;
+  const nos = getSelectedSiswaNos();
+  const info = document.getElementById('siswaPoinInfo');
+  if(!kelas || nos.length===0){ info.innerHTML=''; return; }
+  if(nos.length===1){
+    info.innerHTML = `Poin saat ini: ${poinBadgeHtml(nos[0], kelas)}`;
+  }else{
+    info.innerHTML = `<div class="muted" style="margin-bottom:4px;">${nos.length} siswa dipilih:</div>` + nos.map(no=>{
+      const s = siswaList.find(x=>x.kelas===kelas && String(x.no)===String(no));
+      return `<div style="display:flex; align-items:center; gap:6px; margin-bottom:3px;"><span style="font-size:12.5px;">${escapeHtml(s?s.nama:no)}</span>${poinBadgeHtml(no, kelas)}</div>`;
+    }).join('');
+  }
+}
+
+async function renderWaliPanel(){
+  const kelas = document.getElementById('waliKelas').value;
+  const form = document.getElementById('waliForm');
+  const kartuCard = document.getElementById('waliKartuCard');
+  const listCard = document.getElementById('waliListCard');
+  const umpanBalikCard = document.getElementById('waliUmpanBalikCard');
+  if(!kelas){ form.style.display='none'; kartuCard.style.display='none'; listCard.style.display='none'; umpanBalikCard.style.display='none'; return; }
+  form.style.display='block'; kartuCard.style.display='block'; listCard.style.display='block'; umpanBalikCard.style.display='block';
+
+  resetKasusSiswaDropdown();
+  syncPoinFromJenis();
+  renderSiswaPoinInfo();
+
+  // "Perlu Tindakan - Kelas Ini" pakai actionSummary (sudah dihitung server), tidak perlu fetch tambahan
+  if(!actionSummary.loaded) await loadActionSummary();
+  renderWaliKartu(kelas);
+
+  // Riwayat catatan kelas ini: fetch kasus KHUSUS kelas ini saja
+  document.getElementById('waliListWrap').innerHTML = '<div class="empty-state"><span class="ico">⏳</span>Memuat riwayat catatan...</div>';
+  try{
+    const kasusKelas = await loadKasus(kelas);
+    renderWaliList(kelas, kasusKelas);
+  }catch(err){
+    document.getElementById('waliListWrap').innerHTML = `<div class="empty-state"><span class="ico">⚠️</span>Gagal memuat: ${escapeHtml(err.message)}</div>`;
+  }
+
+  // Umpan balik orang tua kelas ini
+  document.getElementById('waliUmpanBalikWrap').innerHTML = '<div class="empty-state"><span class="ico">⏳</span>Memuat umpan balik...</div>';
+  try{
+    const umpanBalikKelas = await loadUmpanBalik(kelas);
+    renderWaliUmpanBalik(kelas, umpanBalikKelas);
+  }catch(err){
+    document.getElementById('waliUmpanBalikWrap').innerHTML = `<div class="empty-state"><span class="ico">⚠️</span>Gagal memuat: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+document.getElementById('btnSimpanKasus').addEventListener('click', async ()=>{
+  const kelas = document.getElementById('waliKelas').value;
+  const nos = getSelectedSiswaNos();
+  const tanggal = document.getElementById('kasusTanggal').value;
+  const jenisOpt = document.getElementById('kasusJenis').selectedOptions[0];
+  const jenis = jenisOpt ? jenisOpt.value : '';
+  const kategori = jenisOpt ? jenisOpt.dataset.kategori : 'Lainnya';
+  const poin = parseInt(document.getElementById('kasusPoin').value, 10) || 0;
+  const status = document.getElementById('kasusStatus').value;
+  const deskripsi = document.getElementById('kasusDeskripsi').value.trim();
+  const tindakan = document.getElementById('kasusTindakan').value.trim();
+  if(!kelas || nos.length===0 || !tanggal || !deskripsi){ toast('Lengkapi siswa (pilih min. 1), tanggal, dan deskripsi', true); return; }
+  showLoading(nos.length>1 ? `Menyimpan catatan untuk ${nos.length} siswa...` : 'Menyimpan catatan...');
+  try{
+    for(const no of nos){
+      const siswa = siswaList.find(s=>s.kelas===kelas && String(s.no)===String(no));
+      const item = {no, nama: siswa?siswa.nama:'', kelas, tanggal, jenis, kategori, poin, deskripsi, tindakan, status};
+      const result = await apiPost('addKasus', item);
+      const newItem = { id: result.id, dibuat: result.dibuat, histori: result.histori || [], ...item };
+      if(kasusCache[kelas]) kasusCache[kelas].unshift(newItem); // update cache lokal, tanpa fetch ulang
+    }
+    persistCache();
+    document.getElementById('kasusDeskripsi').value=''; document.getElementById('kasusTindakan').value='';
+    resetKasusSiswaDropdown();
+    renderWaliList(kelas, kasusCache[kelas] || []);
+    await invalidateAfterMutation({ siswa: true, actionSum: true }); // poin & badge berubah
+    if(document.getElementById('waliKelas').value === kelas) renderWaliKartu(kelas);
+    renderSiswaPoinInfo();
+    toast(nos.length>1 ? `Catatan kasus tersimpan untuk ${nos.length} siswa` : 'Catatan kasus tersimpan');
+  }catch(err){ toast('Gagal menyimpan: '+err.message, true); }
+  finally{ hideLoading(); }
+});
+
+function renderWaliKartu(kelas){
+  const wrap = document.getElementById('waliKartuWrap');
+  const list = (actionSummary.list || []).filter(a=>a.kelas===kelas);
+  if(list.length===0){ wrap.innerHTML = `<div class="empty-state"><span class="ico">✓</span>Tidak ada siswa perlu tindakan di kelas ini.</div>`; return; }
+  wrap.innerHTML = list.map(cardHtml).join('');
+}
+
+function renderWaliList(kelas, list){
+  const wrap = document.getElementById('waliListWrap');
+  const sorted = [...list].sort((a,b)=> b.tanggal.localeCompare(a.tanggal));
+  if(sorted.length===0){ wrap.innerHTML = `<div class="empty-state"><span class="ico">📝</span>Belum ada catatan untuk kelas ini.</div>`; return; }
+  wrap.innerHTML = sorted.map(k=>renderCaseCard(k)).join('');
+  attachCaseCardHandlers(wrap, kelas);
+}
+
+function renderCaseCard(k){
+  const histori = k.histori || [];
+  const kategoriLabel = KATEGORI_LABEL[k.kategori] || k.kategori || 'Lainnya';
+  const poinTxt = k.poin ? `${k.poin>0?'+':''}${k.poin} poin` : '0 poin';
+  return `
+    <div class="case-card" data-case-id="${k.id}">
+      <div class="top">
+        <div>
+          <div class="who">${escapeHtml(k.nama)} <span class="kelas-pill">${escapeHtml(k.kelas)}</span></div>
+          <div class="meta">${fmtTanggal(k.tanggal)} &middot; ${escapeHtml(k.jenis)}</div>
+        </div>
+        <span class="badge ${k.status}">${STATUS_LABEL[k.status]}</span>
+      </div>
+      <div style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap;">
+        <span class="badge ${k.kategori}">${escapeHtml(kategoriLabel)}</span>
+        <span class="poin-badge ${k.poin<0?'bad':(k.poin>0?'good':'warn')}">${poinTxt}</span>
+        ${poinBadgeHtml(k.no, k.kelas)}
+      </div>
+      <div class="desc">${escapeHtml(k.deskripsi)}</div>
+      ${k.tindakan ? `<div class="tindakan">Tindakan awal: ${escapeHtml(k.tindakan)}</div>` : ''}
+
+      <button class="histori-toggle" data-toggle-histori="${k.id}">📜 Riwayat penanganan (${histori.length})</button>
+      <div class="histori-list" id="histori-${k.id}" style="display:none;">
+        ${histori.map(h=>`
+          <div class="histori-item">
+            <div class="ts">${fmtTimestamp(h.tanggal)}</div>
+            <div class="ct">${escapeHtml(h.catatan)}</div>
+          </div>
+        `).join('') || '<div class="muted">Belum ada riwayat.</div>'}
+      </div>
+
+      <div class="case-actions">
+        <select data-id="${k.id}">
+          <option value="PerluTindakan" ${k.status==='PerluTindakan'?'selected':''}>Perlu Tindakan</option>
+          <option value="DalamProses" ${k.status==='DalamProses'?'selected':''}>Dalam Proses</option>
+          <option value="Selesai" ${k.status==='Selesai'?'selected':''}>Selesai</option>
+        </select>
+        <button class="btn secondary sm auto" data-add-tindak-lanjut="${k.id}">+ Tindak Lanjut</button>
+        <button class="btn danger sm auto" data-del-id="${k.id}">Hapus</button>
+      </div>
+      <div class="tindak-lanjut-form" id="tl-form-${k.id}" style="display:none;">
+        <div class="field"><label>Catatan Tindak Lanjut</label><textarea id="tl-catatan-${k.id}" placeholder="Contoh: Sudah dipanggil orang tua, siswa berjanji tidak mengulangi..."></textarea></div>
+        <button class="btn brass sm auto" data-submit-tindak-lanjut="${k.id}">Simpan Tindak Lanjut</button>
+      </div>
+    </div>
+  `;
+}
+
+function attachCaseCardHandlers(wrap, kelas){
+  wrap.querySelectorAll('[data-toggle-histori]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const el = document.getElementById('histori-'+btn.dataset.toggleHistori);
+      el.style.display = el.style.display==='none' ? 'block' : 'none';
+    });
+  });
+  wrap.querySelectorAll('[data-add-tindak-lanjut]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const el = document.getElementById('tl-form-'+btn.dataset.addTindakLanjut);
+      el.style.display = el.style.display==='none' ? 'flex' : 'none';
+    });
+  });
+  wrap.querySelectorAll('[data-submit-tindak-lanjut]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.dataset.submitTindakLanjut;
+      const catatan = document.getElementById('tl-catatan-'+id).value.trim();
+      if(!catatan){ toast('Isi catatan tindak lanjut terlebih dahulu', true); return; }
+      showLoading('Menyimpan tindak lanjut...');
+      try{
+        const result = await apiPost('addTindakLanjut', {id, catatan});
+        const list = kasusCache[kelas] || [];
+        const item = list.find(k=>k.id===id);
+        if(item) item.histori = result.histori;
+        persistCache();
+        renderWaliList(kelas, list);
+        toast('Tindak lanjut ditambahkan');
+      }catch(err){ toast('Gagal menyimpan: '+err.message, true); }
+      finally{ hideLoading(); }
+    });
+  });
+  wrap.querySelectorAll('select[data-id]').forEach(sel=>{
+    sel.addEventListener('change', async ()=>{
+      const id = sel.dataset.id;
+      showLoading('Memperbarui status...');
+      try{
+        const result = await apiPost('updateKasusStatus', {id, status: sel.value});
+        const list = kasusCache[kelas] || [];
+        const item = list.find(k=>k.id===id);
+        if(item){ item.status = sel.value; item.histori = result.histori; }
+        persistCache();
+        renderWaliList(kelas, list);
+        await invalidateAfterMutation({ actionSum: true });
+        renderWaliKartu(kelas);
+        toast('Status catatan diperbarui');
+      }catch(err){ toast('Gagal memperbarui: '+err.message, true); }
+      finally{ hideLoading(); }
+    });
+  });
+  wrap.querySelectorAll('[data-del-id]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      if(!confirm('Hapus catatan ini beserta seluruh riwayatnya?')) return;
+      const id = btn.dataset.delId;
+      showLoading('Menghapus catatan...');
+      try{
+        await apiPost('deleteKasus', {id});
+        kasusCache[kelas] = (kasusCache[kelas] || []).filter(k=>k.id!==id);
+        persistCache();
+        renderWaliList(kelas, kasusCache[kelas]);
+        await invalidateAfterMutation({ siswa: true, actionSum: true });
+        renderWaliKartu(kelas);
+        toast('Catatan dihapus');
+      }catch(err){ toast('Gagal menghapus: '+err.message, true); }
+      finally{ hideLoading(); }
+    });
+  });
+}
+
+/* ======================= UMPAN BALIK ORANG TUA (kartu 04) ======================= */
+function renderWaliUmpanBalik(kelas, list){
+  const wrap = document.getElementById('waliUmpanBalikWrap');
+  const countEl = document.getElementById('waliUmpanBalikCount');
+  const sorted = [...list].sort((a,b)=> String(b.dibuat).localeCompare(String(a.dibuat)));
+  const baruCount = sorted.filter(f=>f.status!=='Dibaca').length;
+  countEl.textContent = sorted.length ? `(${baruCount} baru / ${sorted.length} total)` : '';
+  if(sorted.length===0){
+    wrap.innerHTML = `<div class="empty-state"><span class="ico">📭</span>Belum ada umpan balik dari orang tua untuk kelas ini.</div>`;
+    return;
+  }
+  wrap.innerHTML = sorted.map(f=>`
+    <div class="case-card" data-feedback-id="${f.id}">
+      <div class="top">
+        <div>
+          <div class="who">${escapeHtml(f.nama || '(tanpa nama)')} <span class="kelas-pill">${escapeHtml(f.kelas)}</span></div>
+          <div class="meta">${fmtTimestamp(f.dibuat)}</div>
+        </div>
+        <span class="badge ${f.status==='Dibaca' ? 'Dibaca' : 'Baru'}">${f.status==='Dibaca' ? 'Sudah Dibaca' : 'Belum Dibaca'}</span>
+      </div>
+      <div class="desc">${escapeHtml(f.pesan)}</div>
+      <div class="feedback-actions">
+        ${f.status==='Dibaca'
+          ? `<button class="btn secondary sm auto" data-ub-status="${f.id}" data-ub-target="Baru">Tandai Belum Dibaca</button>`
+          : `<button class="btn brass sm auto" data-ub-status="${f.id}" data-ub-target="Dibaca">Tandai Sudah Dibaca</button>`}
+        <button class="btn danger sm auto" data-ub-del="${f.id}">Hapus</button>
+      </div>
+    </div>
+  `).join('');
+  attachUmpanBalikHandlers(wrap, kelas);
+}
+
+function attachUmpanBalikHandlers(wrap, kelas){
+  wrap.querySelectorAll('[data-ub-status]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.dataset.ubStatus;
+      const target = btn.dataset.ubTarget;
+      showLoading('Memperbarui status...');
+      try{
+        await apiPost('updateUmpanBalikStatus', {id, status: target});
+        const list = umpanBalikCache[kelas] || [];
+        const item = list.find(f=>f.id===id);
+        if(item) item.status = target;
+        persistCache();
+        renderWaliUmpanBalik(kelas, list);
+        toast('Status pesan diperbarui');
+      }catch(err){ toast('Gagal memperbarui: '+err.message, true); }
+      finally{ hideLoading(); }
+    });
+  });
+  wrap.querySelectorAll('[data-ub-del]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      if(!confirm('Hapus pesan umpan balik ini?')) return;
+      const id = btn.dataset.ubDel;
+      showLoading('Menghapus pesan...');
+      try{
+        await apiPost('deleteUmpanBalik', {id});
+        umpanBalikCache[kelas] = (umpanBalikCache[kelas] || []).filter(f=>f.id!==id);
+        persistCache();
+        renderWaliUmpanBalik(kelas, umpanBalikCache[kelas]);
+        toast('Pesan dihapus');
+      }catch(err){ toast('Gagal menghapus: '+err.message, true); }
+      finally{ hideLoading(); }
+    });
+  });
+}
+
+/* ======================= TAB KEPSEK / KESISWAAN ======================= */
+document.getElementById('kepsekTanggalStart').value = todayISO();
+document.getElementById('kepsekTanggalEnd').value = todayISO();
+document.getElementById('kepsekTanggalStart').addEventListener('change', renderKepsekRekap);
+document.getElementById('kepsekTanggalEnd').addEventListener('change', renderKepsekRekap);
+
+async function renderKepsekAll(){
+  await Promise.all([renderKepsekRekap(), (async()=>{ if(!actionSummary.loaded) await loadActionSummary(); renderKepsekKartu(); })()]);
+  renderPoinRankOptions(); renderPoinRank();
+}
+
+/* ---- Peringkat jumlah Alpa / Sakit / Izin (kartu 04, 05, 06) ----
+   Dihitung dari data kehadiran periode yang sama dengan "Rekap Kehadiran"
+   (kartu 01) di atas, supaya tidak perlu fetch tambahan ke server. */
+function computeStatusCountsPerSiswa(records){
+  const map = {};
+  siswaList.forEach(s=>{
+    map[`${s.kelas}::${s.no}`] = { no:s.no, nama:s.nama, kelas:s.kelas, Hadir:0, Sakit:0, Izin:0, Alpa:0 };
+  });
+  records.forEach(r=>{
+    const key = `${r.kelas}::${r.no}`;
+    if(map[key] && map[key][r.status] !== undefined) map[key][r.status]++;
+  });
+  return Object.values(map);
+}
+
+function renderStatusRankCard(wrapId, statField, records, emoji){
+  const wrap = document.getElementById(wrapId);
+  if(!wrap) return;
+  const stats = computeStatusCountsPerSiswa(records)
+    .filter(s => s[statField] > 0)
+    .sort((a,b)=> b[statField] - a[statField] || a.nama.localeCompare(b.nama,'id'));
+
+  if(stats.length===0){
+    wrap.innerHTML = `<div class="empty-state"><span class="ico">${emoji}</span>Tidak ada catatan ${statField} pada periode ini.</div>`;
+    return;
+  }
+  wrap.innerHTML = stats.map((s,i)=>`
+    <div class="poin-rank-item">
+      <div class="no" style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-faint); width:22px; flex-shrink:0;">${i+1}</div>
+      <div class="nm"><div class="name">${escapeHtml(s.nama)}</div><div class="kelas">No. ${escapeHtml(s.no)} &middot; ${escapeHtml(s.kelas)}</div></div>
+      <span class="badge ${statField}">${s[statField]}x</span>
+    </div>
+  `).join('');
+}
+
+function clearStatusRankCards(msg){
+  ['kepsekAlpaRankWrap','kepsekSakitRankWrap','kepsekIzinRankWrap'].forEach(id=>{
+    const wrap = document.getElementById(id);
+    if(wrap) wrap.innerHTML = msg;
+  });
+}
+
+async function renderKepsekRekap(){
+  const start = document.getElementById('kepsekTanggalStart').value;
+  const end = document.getElementById('kepsekTanggalEnd').value;
+  const wrap = document.getElementById('kepsekRekapWrap');
+  const kelasList = uniqueKelas();
+  if(kelasList.length===0){
+    wrap.innerHTML = `<div class="empty-state"><span class="ico">📊</span>Belum ada data kelas.</div>`;
+    clearStatusRankCards(`<div class="empty-state"><span class="ico">📊</span>Belum ada data kelas.</div>`);
+    return;
+  }
+  if(!start || !end){
+    wrap.innerHTML = `<div class="empty-state"><span class="ico">📅</span>Isi rentang tanggal terlebih dahulu.</div>`;
+    clearStatusRankCards(`<div class="empty-state"><span class="ico">📅</span>Isi rentang tanggal terlebih dahulu.</div>`);
+    return;
+  }
+  if(new Date(start+'T00:00:00') > new Date(end+'T00:00:00')){
+    wrap.innerHTML = `<div class="empty-state"><span class="ico">⚠️</span>Rentang tanggal tidak valid.</div>`;
+    clearStatusRankCards(`<div class="empty-state"><span class="ico">⚠️</span>Rentang tanggal tidak valid.</div>`);
+    return;
+  }
+
+  const isSingleDay = start === end;
+  wrap.innerHTML = `<div class="empty-state"><span class="ico">⏳</span>Memuat rekap...</div>`;
+  clearStatusRankCards(`<div class="empty-state"><span class="ico">⏳</span>Memuat peringkat...</div>`);
+  let allRecords;
+  try{
+    allRecords = isSingleDay
+      ? await loadKehadiranByDate(start, 'all')         // 1 fetch untuk semua kelas pada tanggal ini
+      : await loadKehadiranRange('all', start, end);    // 1 fetch untuk semua kelas pada rentang ini
+  }
+  catch(err){
+    wrap.innerHTML = `<div class="empty-state"><span class="ico">⚠️</span>Gagal memuat: ${escapeHtml(err.message)}</div>`;
+    clearStatusRankCards(`<div class="empty-state"><span class="ico">⚠️</span>Gagal memuat: ${escapeHtml(err.message)}</div>`);
+    return;
+  }
+
+  const periodeLabel = isSingleDay ? fmtTanggal(start) : `${fmtTanggal(start)} &ndash; ${fmtTanggal(end)}`;
+
+  wrap.innerHTML = kelasList.map(kelas=>{
+    const totalSiswa = studentsInKelas(kelas).length;
+    const recs = allRecords.filter(r=>r.kelas===kelas);
+    const counts = {Hadir:0, Sakit:0, Izin:0, Alpa:0};
+    recs.forEach(r=>{ if(counts[r.status]!==undefined) counts[r.status]++; });
+    const pct = recs.length>0 ? Math.round((counts.Hadir/recs.length)*100) : 0;
+    return `<div class="rekap-card">
+      <div class="rk-top"><span class="kelas-pill">${escapeHtml(kelas)}</span><span class="muted">${totalSiswa} siswa &middot; ${periodeLabel}</span></div>
+      ${recs.length===0 ? '<div class="muted">Belum diisi untuk periode ini</div>' : `
+        <div class="rekap-counts">
+          <span style="color:var(--hadir)">Hadir<b>${counts.Hadir}</b></span>
+          <span style="color:var(--sakit)">Sakit<b>${counts.Sakit}</b></span>
+          <span style="color:var(--izin)">Izin<b>${counts.Izin}</b></span>
+          <span style="color:var(--alpa)">Alpa<b>${counts.Alpa}</b></span>
+        </div>
+        <div class="rekap-bar"><div style="width:${pct}%;"></div></div>
+        <div class="muted" style="margin-top:4px;">${pct}% hadir dari total entri</div>
+      `}
+    </div>`;
+  }).join('');
+
+  renderStatusRankCard('kepsekAlpaRankWrap', 'Alpa', allRecords, '✓');
+  renderStatusRankCard('kepsekSakitRankWrap', 'Sakit', allRecords, '✓');
+  renderStatusRankCard('kepsekIzinRankWrap', 'Izin', allRecords, '✓');
+}
+
+function renderKepsekKartu(){
+  const wrap = document.getElementById('kepsekKartuWrap');
+  const list = actionSummary.list || [];
+  if(list.length===0){ wrap.innerHTML = `<div class="empty-state"><span class="ico">✓</span>Tidak ada siswa perlu tindakan saat ini.</div>`; return; }
+  wrap.innerHTML = list.map(cardHtml).join('');
+}
+
+function renderPoinRankOptions(){
+  const sel = document.getElementById('poinKelasFilter');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Semua kelas</option>' + uniqueKelas().map(k=>`<option value="${escapeHtml(k)}">${escapeHtml(k)}</option>`).join('');
+  sel.value = cur;
+}
+document.getElementById('poinKelasFilter').addEventListener('change', renderPoinRank);
+
+function renderPoinRank(){
+  const wrap = document.getElementById('poinRankWrap');
+  const kelasFilter = document.getElementById('poinKelasFilter').value;
+  let list = siswaList.filter(s=> !kelasFilter || s.kelas===kelasFilter)
+    .slice()
+    .sort((a,b)=> (a.poin ?? POIN_AWAL) - (b.poin ?? POIN_AWAL) || a.nama.localeCompare(b.nama,'id'));
+
+  if(list.length===0){ wrap.innerHTML = `<div class="empty-state"><span class="ico">🏅</span>Belum ada data siswa.</div>`; return; }
+
+  wrap.innerHTML = list.map(s=>`
+    <div class="poin-rank-item">
+      <div class="nm"><div class="name">${escapeHtml(s.nama)}</div><div class="kelas">No. ${escapeHtml(s.no)} &middot; ${escapeHtml(s.kelas)}</div></div>
+      <span class="poin-badge ${poinBadgeClass(s.poin ?? POIN_AWAL)}">⬤ ${s.poin ?? POIN_AWAL}/100</span>
+    </div>
+  `).join('');
+}
+
+/* ======================= KARTU AKSI (dipakai Wali & Kepsek, sumber: actionSummary) ======================= */
+function cardHtml(item){
+  const poin = getStudentPoin(item.no, item.kelas);
+  return `<div class="action-card">
+    <h3>${escapeHtml(item.nama)} <span class="poin-badge ${poinBadgeClass(poin)}" style="margin-left:4px;">${poin}/100</span></h3>
+    <div class="kls">No. ${escapeHtml(item.no)} &middot; Kelas ${escapeHtml(item.kelas)}</div>
+    <div class="reasons">${(item.reasons||[]).map(r=>`<div class="reason">${escapeHtml(r)}</div>`).join('')}</div>
+  </div>`;
+}
+
+/* ======================= HEADER STATS / FLAG ======================= */
+function renderHeaderStats(){
+  const n = actionSummary.count || 0;
+  const flag = document.getElementById('tabActionFlag');
+  if(n>0){ flag.style.display='flex'; flag.textContent = n>99?'99+':n; } else { flag.style.display='none'; }
+}
+
+/* ======================= INIT — cache lokal dulu, baru sinkron ke server =======================
+   Alur baru:
+   1. Coba baca cache dari localStorage. Jika ada, langsung tampilkan (TIDAK
+      menunggu jaringan sama sekali) — aplikasi terasa instan saat dibuka
+      lagi walau koneksi lambat.
+   2. Di belakang layar, tetap ambil data terbaru (siswa + ringkasan aksi)
+      dari Google Sheets untuk memastikan data selalu mutakhir, lalu perbarui
+      tampilan + cache lokal begitu selesai.
+   3. Jika TIDAK ada cache tersimpan (pertama kali dibuka di perangkat ini),
+      tampilkan overlay loading seperti biasa sambil menunggu data awal. */
+async function init(){
+  if(!isConfigured()){
+    document.getElementById('configBanner').style.display = 'block';
+    setSync('err', 'Belum diatur');
+    return;
+  }
+  document.getElementById('configBanner').style.display = 'none';
+
+  const cacheInfo = restoreCacheFromStorage();
+
+  if(cacheInfo.ada){
+    // Tampilkan langsung dari cache — tanpa overlay loading, tanpa menunggu jaringan.
+    refreshHeaderScaffolding();
+    renderDataSiswaList();
+    const menitLalu = isFinite(cacheInfo.umurMs) ? Math.max(0, Math.round(cacheInfo.umurMs/60000)) : null;
+    setSync('busy', menitLalu === null ? 'Dari cache' : (menitLalu < 1 ? 'Dari cache' : `Cache ${menitLalu}m lalu`));
+
+    // Segarkan di belakang layar tanpa mengunci layar.
+    refreshFromServerInBackground();
+  }else{
+    // Tidak ada cache sama sekali (pertama kali dibuka) — tampilkan overlay seperti biasa.
+    showLoading('Memuat daftar siswa...');
+    setSync('busy', 'Sinkron...');
+    try{
+      await Promise.all([loadSiswa(true), loadActionSummary(true)]);
+      persistCache();
+      setSync('', 'Tersinkron');
+      refreshHeaderScaffolding();
+      renderDataSiswaList();
+    }catch(err){
+      console.error(err);
+      setSync('err', 'Gagal sinkron');
+      toast('Gagal memuat data: ' + err.message, true);
+    }finally{
+      hideLoading();
+    }
+  }
+}
+
+async function refreshFromServerInBackground(){
+  try{
+    await Promise.all([loadSiswa(true), loadActionSummary(true)]);
+    persistCache();
+    setSync('', 'Tersinkron');
+    await rerenderActiveTab();
+  }catch(err){
+    // Gagal menyegarkan bukan masalah besar — data cache lama tetap tampil
+    // dan bisa dipakai. Cukup tandai status sinkron sebagai gagal.
+    console.warn('Gagal menyegarkan dari server, tetap memakai cache lokal:', err);
+    setSync('err', 'Gagal sinkron (pakai cache)');
+  }
+}
+init();
+</script>
+</body>
+</html>
