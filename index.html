@@ -18,6 +18,7 @@
     --izin:#C4893A; --izin-bg:#F5EBDA;
     --sakit:#4E6E93; --sakit-bg:#E5EAF2;
     --alpa:#B8493C; --alpa-bg:#F5E2DE;
+    --terlambat:#7B4FA6; --terlambat-bg:#EEE6F5;
     --card:#FFFFFF;
     --shadow:0 2px 10px rgba(28,58,68,0.08);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -162,6 +163,35 @@
   .st-btn[data-st="Sakit"].active{background:var(--sakit-bg); border-color:var(--sakit); color:var(--sakit);}
   .st-btn[data-st="Izin"].active{background:var(--izin-bg); border-color:var(--izin); color:var(--izin);}
   .st-btn[data-st="Alpa"].active{background:var(--alpa-bg); border-color:var(--alpa); color:var(--alpa);}
+  .st-btn[data-st="Terlambat"].active{background:var(--terlambat-bg); border-color:var(--terlambat); color:var(--terlambat);}
+
+  /* ===== Badge "Keterangan Tugas" (khusus kelas Guru) ===== */
+  .tugas-badge{
+    font-size:11px; font-weight:600; padding:3px 8px; border-radius:20px; white-space:nowrap;
+    display:inline-flex; align-items:center; gap:4px; margin-top:4px; cursor:pointer; border:1.5px solid transparent;
+  }
+  .tugas-badge.ada{background:var(--hadir-bg); color:var(--hadir); border-color:var(--hadir);}
+  .tugas-badge.tidak{background:var(--alpa-bg); color:var(--alpa); border-color:var(--alpa);}
+  .tugas-badge.kosong{background:var(--izin-bg); color:var(--izin); border-color:var(--izin);}
+  .status-row.guru-row{flex-wrap:wrap;}
+  .status-row.guru-row .who{width:100%; flex:none; margin-bottom:2px;}
+
+  /* ===== Modal popup "Memberikan Tugas" ===== */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(28,58,68,.55); display:none; align-items:flex-end;
+    justify-content:center; z-index:400; padding:0;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal-sheet{
+    background:var(--card); width:100%; max-width:640px; border-radius:16px 16px 0 0;
+    padding:20px 18px calc(20px + var(--safe-bottom)); box-shadow:0 -4px 20px rgba(28,58,68,.2);
+    animation:slideUp .2s ease;
+  }
+  @keyframes slideUp{from{transform:translateY(16px); opacity:0;} to{transform:none; opacity:1;}}
+  .modal-sheet h3{font-family:'Fraunces',serif; font-size:16px; font-weight:600; margin:0 0 4px;}
+  .modal-sheet p.hint{color:var(--ink-soft); font-size:12.5px; margin:0 0 16px; line-height:1.5;}
+  .modal-sheet .btn-row{flex-direction:column;}
+  .modal-sheet .btn-row .btn{min-width:0;}
 
   .badge{
     display:inline-flex; align-items:center; gap:5px; font-family:'IBM Plex Mono',monospace;
@@ -171,6 +201,7 @@
   .badge.Sakit{background:var(--sakit-bg); color:var(--sakit);}
   .badge.Izin{background:var(--izin-bg); color:var(--izin);}
   .badge.Alpa{background:var(--alpa-bg); color:var(--alpa);}
+  .badge.Terlambat{background:var(--terlambat-bg); color:var(--terlambat);}
   .badge.Selesai{background:var(--hadir-bg); color:var(--hadir);}
   .badge.DalamProses{background:var(--izin-bg); color:var(--izin);}
   .badge.PerluTindakan{background:var(--alpa-bg); color:var(--alpa);}
@@ -231,6 +262,7 @@
   .summary-chip .l{font-size:10px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em;}
   .summary-chip.Hadir .n{color:var(--hadir);} .summary-chip.Sakit .n{color:var(--sakit);}
   .summary-chip.Izin .n{color:var(--izin);} .summary-chip.Alpa .n{color:var(--alpa);}
+  .summary-chip.Terlambat .n{color:var(--terlambat);}
   .report-grid{display:grid; gap:8px; margin-top:10px;}
   .report-grid .summary-chip{min-width:0;}
   .print-shell{display:none;}
@@ -243,6 +275,49 @@
   .action-card .kls{font-size:11px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; margin-bottom:7px;}
   .action-card .reasons{display:flex; flex-direction:column; gap:5px;}
   .action-card .reason{font-size:11.5px; background:var(--alpa-bg); color:var(--alpa); padding:5px 8px; border-radius:6px; line-height:1.4;}
+
+  /* ===== Kartu "Absensi Harian" (ringkasan wali kelas setelah pilih kelas) ===== */
+  .ah-card{padding:0; overflow:hidden;}
+  .ah-head{
+    background:linear-gradient(135deg, var(--ink) 0%, #2f5676 100%); color:#fff;
+    padding:16px 15px; display:flex; align-items:center; gap:11px;
+  }
+  .ah-badge{
+    width:34px; height:34px; border-radius:8px; background:#F0C419; color:#1C1206;
+    font-family:'Fraunces',serif; font-weight:800; font-size:16px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ah-school-name{font-size:11px; font-weight:600; opacity:.85; line-height:1.3;}
+  .ah-head-title{font-family:'Fraunces',serif; font-weight:700; font-size:18px; line-height:1.3; margin-top:1px;}
+  .ah-body{padding:15px;}
+  .ah-row{display:flex; align-items:center; gap:8px; margin-bottom:9px;}
+  .ah-row input[type=date]{flex:1;}
+  .ah-kelas-chip{
+    font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:11.5px; color:var(--ink);
+    background:var(--paper); border:1px solid var(--rule); border-radius:20px; padding:0 12px;
+    white-space:nowrap; display:flex; align-items:center;
+  }
+  .ah-stats{display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-bottom:16px;}
+  .ah-stat{background:var(--card); border:1px solid var(--rule); border-radius:10px; overflow:hidden; text-align:center;}
+  .ah-stat .hd{font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; color:#fff; padding:5px 2px;}
+  .ah-stat .val{font-family:'Fraunces',serif; font-weight:700; font-size:20px; padding:7px 2px 8px; line-height:1;}
+  .ah-stat.Hadir .hd{background:var(--hadir);} .ah-stat.Hadir .val{color:var(--hadir);}
+  .ah-stat.Sakit .hd{background:var(--sakit);} .ah-stat.Sakit .val{color:var(--sakit);}
+  .ah-stat.Izin .hd{background:var(--izin);} .ah-stat.Izin .val{color:var(--izin);}
+  .ah-stat.Alpa .hd{background:var(--alpa);} .ah-stat.Alpa .val{color:var(--alpa);}
+  .ah-stat.Terlambat .hd{background:var(--terlambat);} .ah-stat.Terlambat .val{color:var(--terlambat);}
+  .ah-list-title{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); margin-bottom:4px;}
+  .ah-item{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:9px 3px; border-bottom:1px solid var(--rule); font-size:13px;}
+  .ah-item:last-child{border-bottom:none;}
+  .ah-item .ah-no{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-faint); margin-right:6px;}
+  .ah-item .ah-name{font-weight:600; flex:1; min-width:0;}
+  .ah-item .ah-status{font-size:11px; font-weight:700; white-space:nowrap;}
+  .ah-item .ah-status.Sakit{color:var(--sakit);}
+  .ah-item .ah-status.Izin{color:var(--izin);}
+  .ah-item .ah-status.Alpa{color:var(--alpa);}
+  .ah-item .ah-status.Terlambat{color:var(--terlambat);}
+  .ah-item .ah-petugas{font-size:9.5px; font-weight:400; color:var(--ink-faint); margin-top:1px;}
+  .ah-empty{padding:14px 3px; text-align:center; color:var(--ink-soft); font-size:12.5px;}
 
   .empty-state{text-align:center; padding:30px 16px; color:var(--ink-soft); font-size:13px;}
   .empty-state .ico{font-size:24px; display:block; margin-bottom:8px;}
@@ -302,6 +377,19 @@
   .checkdrop-footer .cd-clear{background:none; border:none; color:var(--alpa); font-size:12px; font-weight:600; cursor:pointer; padding:4px 2px; font-family:'IBM Plex Sans',sans-serif;}
   .checkdrop-footer .cd-done{background:var(--ink); color:#fff; border:none; border-radius:7px; padding:7px 14px; font-size:12.5px; font-weight:600; cursor:pointer; font-family:'IBM Plex Sans',sans-serif;}
 
+  /* ===== Balasan umpan balik (wali kelas -> orang tua) ===== */
+  .balasan-box{
+    margin-top:10px; background:#fff; border-left:3px solid var(--brass); border-radius:0 8px 8px 0;
+    padding:9px 10px;
+  }
+  .balasan-box .lbl{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--brass); margin-bottom:3px;}
+  .balasan-box .txt{font-size:12.5px; line-height:1.5;}
+  .balasan-box .ts{font-size:10.5px; color:var(--ink-faint); font-family:'IBM Plex Mono',monospace; margin-top:4px;}
+  .balasan-form{
+    margin-top:10px; padding:10px; background:#fff; border:1px dashed var(--rule); border-radius:8px;
+    display:flex; flex-direction:column; gap:8px;
+  }
+
   /* ===== Bottom nav ===== */
   nav.tabbar{
     position:fixed; left:0; right:0; bottom:0; z-index:90;
@@ -355,12 +443,14 @@
   .loading-bar-track{width:100%; height:8px; border-radius:999px; background:var(--rule); overflow:hidden; margin-top:2px;}
   .loading-bar-fill{height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg, var(--accent) 0%, var(--brass) 100%); transition:width .25s ease-out;}
   .loading-pct{font-family:'IBM Plex Mono', monospace; font-size:12px; font-weight:700; color:var(--ink); margin-top:8px;}
+  .loading-btn-row{display:flex; gap:8px; justify-content:center;}
   .loading-cancel{
     margin-top:14px; background:none; border:1px solid var(--rule); color:var(--ink-soft);
     font-family:'IBM Plex Sans',sans-serif; font-size:11.5px; font-weight:600;
     padding:8px 14px; border-radius:20px; cursor:pointer; display:none;
   }
   .loading-cancel.show{display:inline-block;}
+  #loadingRetryBtn.show{background:var(--ink); color:var(--paper); border-color:var(--ink);}
   @keyframes spin{to{transform:rotate(360deg);}}
   @keyframes cardIn{from{opacity:0; transform:translateY(8px) scale(.97);} to{opacity:1; transform:translateY(0) scale(1);} }
   @keyframes logoGlow{
@@ -403,7 +493,7 @@
 <header class="cover">
   <div class="wrap">
     <div class="brand">
-      <div class="mark"><img id="headerLogoImg" src="" alt="Logo SMPN 2 KARANG TENGAH"></div>
+      <div class="mark"><img id="headerLogoImg" src="" alt="Logo SMP Negeri 2 Karangtengah"></div>
       <div>
         <h1>Buku Kehadiran</h1>
         <p>&amp; Catatan Kasus Siswa</p>
@@ -422,8 +512,8 @@
   <!-- ===================== TAB: DATA SISWA ===================== -->
   <section class="panel active" id="panel-data">
     <div class="card">
-      <h2><span class="num">01</span>Impor dari Spreadsheet</h2>
-      <p class="hint">Unggah file .csv atau .xlsx dengan header: <b>no, nama, kelas</b>.</p>
+      <h2><span class="num">01</span>Impor dari Spreadsheet 🔒</h2>
+      <p class="hint">Unggah file .csv atau .xlsx dengan header: <b>no, nama, kelas</b>. Perlu password admin.</p>
       <div class="dropzone" id="dropzone">
         <strong>Ketuk untuk pilih file</strong>
         Format .csv / .xlsx &middot; header: no, nama, kelas
@@ -433,7 +523,8 @@
     </div>
 
     <div class="card">
-      <h2><span class="num">02</span>Tambah Manual</h2>
+      <h2><span class="num">02</span>Tambah Manual 🔒</h2>
+      <p class="hint">Perlu password admin.</p>
       <div class="stack">
         <div class="field"><label>No</label><input type="text" id="manNo" placeholder="1"></div>
         <div class="field"><label>Nama</label><input type="text" id="manNama" placeholder="Nama siswa"></div>
@@ -459,6 +550,7 @@
       <h2><span class="num">01</span>Input Kehadiran</h2>
       <p class="hint">Semua siswa otomatis <b>Hadir</b> &mdash; ketuk status lain hanya untuk yang tidak hadir.</p>
       <div class="stack">
+        <div class="field"><label>Nama Petugas Piket</label><input type="text" id="guruPetugas" placeholder="Nama guru piket yang menginput"></div>
         <div class="field"><label>Tanggal</label><input type="date" id="guruTanggal"></div>
         <div class="field"><label>Kelas</label><select id="guruKelas"><option value="">Pilih kelas</option><option value="all">Semua kelas</option></select></div>
         <div class="btn-row">
@@ -495,6 +587,40 @@
 
   <!-- ===================== TAB: WALI KELAS ===================== -->
   <section class="panel" id="panel-wali">
+    <div class="card ah-card" id="waliAbsensiCard" style="display:none;">
+      <div class="ah-head">
+        <div class="ah-badge">K</div>
+        <div>
+          <div class="ah-school-name" id="ahSchoolName">SMP Negeri 2 Karangtengah</div>
+          <div class="ah-head-title">ABSENSI HARIAN</div>
+        </div>
+      </div>
+      <div class="ah-body">
+        <div class="ah-row">
+          <input type="date" id="ahTanggal">
+          <span class="ah-kelas-chip" id="ahKelasChip"></span>
+        </div>
+        <div class="ah-stats" id="ahStats"></div>
+        <div class="ah-petugas-info muted" id="ahPetugasInfo" style="font-size:11.5px; margin:-8px 0 12px;"></div>
+        <div class="ah-list-title">Siswa Tidak Hadir / Terlambat</div>
+        <div id="ahListWrap"></div>
+      </div>
+    </div>
+
+    <div class="card" id="waliRentangCard" style="display:none;">
+      <h2><span class="num">05</span>Kehadiran per Rentang Tanggal</h2>
+      <div class="stack">
+        <div class="field"><label>Rentang Waktu</label>
+          <div class="btn-row">
+            <input type="date" id="waliRentangStart">
+            <input type="date" id="waliRentangEnd">
+          </div>
+        </div>
+        <button class="btn brass" id="btnWaliRentangTampilkan">Tampilkan</button>
+      </div>
+      <div id="waliRentangWrap" style="margin-top:12px;"></div>
+    </div>
+
     <div class="card">
       <h2><span class="num">01</span>Catatan Kejadian / Kasus</h2>
       <div class="field"><label>Kelas Wali</label><select id="waliKelas"><option value="">Pilih kelas</option></select></div>
@@ -522,26 +648,59 @@
           <div class="field"><label>Tanggal</label><input type="date" id="kasusTanggal"></div>
           <div class="field"><label>Kategori &amp; Jenis Kejadian</label>
             <select id="kasusJenis">
-              <optgroup label="🟡 Ringan (-5 poin)">
-                <option data-kategori="Ringan" data-poin="-5">Terlambat</option>
-                <option data-kategori="Ringan" data-poin="-5">Atribut/Seragam Tidak Lengkap</option>
-                <option data-kategori="Ringan" data-poin="-5">Tidak Mengerjakan Tugas</option>
+              <optgroup label="🟡 Ringan (-2 poin)">
+                <option data-kategori="Ringan" data-poin="-2">Datang terlambat untuk masuk sekolah</option>
+                <option data-kategori="Ringan" data-poin="-2">Keluar kelas tanpa izin</option>
+                <option data-kategori="Ringan" data-poin="-2">Mewarnai rambut</option>
+                <option data-kategori="Ringan" data-poin="-2">Rambut panjang (lebih dari 5 cm)</option>
+                <option data-kategori="Ringan" data-poin="-2">Membawa Handphone (HP) tanpa ada izin dari pihak sekolah</option>
+                <option data-kategori="Ringan" data-poin="-2">Tidak mengenakan atribut sekolah lengkap</option>
+                <option data-kategori="Ringan" data-poin="-2">Tidak mengenakan sepatu sesuai aturan</option>
+                <option data-kategori="Ringan" data-poin="-2">Terlambat memasuki lapangan upacara ketika upacara bendera (Hari Senin)</option>
+                <option data-kategori="Ringan" data-poin="-2">Tidak mengikuti kegiatan pembiasaan kebersihan dan sholat dhuha</option>
+                <option data-kategori="Ringan" data-poin="-2">Tidak melaksanakan piket kelas atau tugas dari guru</option>
+                <option data-kategori="Ringan" data-poin="-2">Makan di kelas waktu KBM</option>
+                <option data-kategori="Ringan" data-poin="-2">Membeli makanan waktu KBM berlangsung</option>
+                <option data-kategori="Ringan" data-poin="-2">Membuang sampah tidak pada tempatnya</option>
+                <option data-kategori="Ringan" data-poin="-2">Bermain di tempat parkir dalam upaya mencegah kerusakan atau kehilangan kendaraan bermotor atau sparepart kendaraan</option>
+                <option data-kategori="Ringan" data-poin="-2">Berhias tidak sesuai dengan aturan sebagai pelajar SMPN 1 Cikalongkulon</option>
+                <option data-kategori="Ringan" data-poin="-2">Memakai perhiasan berlebihan (memakai gelang, kalung)</option>
+                <option data-kategori="Ringan" data-poin="-2">Berbicara kasar terhadap teman yang tidak sesuai dengan etika</option>
               </optgroup>
-              <optgroup label="🟠 Sedang (-10 poin)">
-                <option data-kategori="Sedang" data-poin="-10">Bolos / Tanpa Keterangan</option>
-                <option data-kategori="Sedang" data-poin="-10">Pelanggaran Tata Tertib</option>
-                <option data-kategori="Sedang" data-poin="-10">Menggunakan HP Saat KBM</option>
+              <optgroup label="🟠 Cukup Berat (-5 poin)">
+                <option data-kategori="Sedang" data-poin="-5">Membuat izin palsu atau membuat surat tidak masuk sekolah palsu</option>
+                <option data-kategori="Sedang" data-poin="-5">Meninggalkan sekolah tanpa izin (membolos)</option>
+                <option data-kategori="Sedang" data-poin="-5">Melindungi teman yang bersalah atau memberikan keterangan palsu (bohong)</option>
+                <option data-kategori="Sedang" data-poin="-5">Melompat atau melewati pagar sekolah</option>
+                <option data-kategori="Sedang" data-poin="-5">Tidak mengikuti upacara</option>
+                <option data-kategori="Sedang" data-poin="-5">Berkelahi dengan teman sekelas</option>
+                <option data-kategori="Sedang" data-poin="-5">Mengganggu dan/atau mengacaukan kelas lain</option>
+                <option data-kategori="Sedang" data-poin="-5">Bersikap tidak sopan, menentang kepala sekolah, guru, atau karyawan lainnya</option>
+                <option data-kategori="Sedang" data-poin="-5">Menyuruh atau melakukan vandalisme (mengotori sarana sekolah)</option>
+                <option data-kategori="Sedang" data-poin="-5">Memakai pakaian seragam tidak sesuai dengan aturan</option>
+                <option data-kategori="Sedang" data-poin="-5">Melakukan bullying secara verbal atau tindakan</option>
+                <option data-kategori="Sedang" data-poin="-5">Merokok di lingkungan sekolah atau di luar lingkungan sekolah</option>
               </optgroup>
-              <optgroup label="🔴 Berat (-25 poin)">
-                <option data-kategori="Berat" data-poin="-25">Berkelahi</option>
-                <option data-kategori="Berat" data-poin="-25">Mencontek Saat Ujian</option>
-                <option data-kategori="Berat" data-poin="-25">Merokok di Lingkungan Sekolah</option>
+              <optgroup label="🔴 Berat (-50 poin)">
+                <option data-kategori="Berat" data-poin="-50">Terlibat dalam kegiatan tawuran, berkelahi, main hakim sendiri</option>
+                <option data-kategori="Berat" data-poin="-50">Merusak sarana prasarana sekolah</option>
+                <option data-kategori="Berat" data-poin="-50">Memalsukan tanda tangan orang tua</option>
+                <option data-kategori="Berat" data-poin="-50">Mengambil hak milik orang lain/mencuri di lingkungan sekolah dan di luar sekolah</option>
+                <option data-kategori="Berat" data-poin="-50">Membawa atau menyebarkan berita bohong yang menimbulkan keresahan</option>
+                <option data-kategori="Berat" data-poin="-50">Membawa gambar atau video bersifat pornografi</option>
+                <option data-kategori="Berat" data-poin="-50">Membawa senjata tajam atau senjata api tanpa sepengetahuan atau izin dari pihak sekolah</option>
+                <option data-kategori="Berat" data-poin="-50">Memalsukan dokumen sekolah</option>
+                <option data-kategori="Berat" data-poin="-50">Mengikuti organisasi terlarang</option>
+                <option data-kategori="Berat" data-poin="-50">Berbicara kasar terhadap guru</option>
               </optgroup>
-              <optgroup label="⚫ Sangat Berat (-50 poin)">
-                <option data-kategori="SangatBerat" data-poin="-50">Perundungan (Bullying)</option>
-                <option data-kategori="SangatBerat" data-poin="-50">Pencurian</option>
-                <option data-kategori="SangatBerat" data-poin="-50">Membawa/Menggunakan Zat Terlarang</option>
-                <option data-kategori="SangatBerat" data-poin="-50">Tindakan Asusila</option>
+              <optgroup label="⚫ Sangat Berat (-100 poin)">
+                <option data-kategori="SangatBerat" data-poin="-100">Memalsukan tanda tangan kepala sekolah, dewan guru, dan tenaga administrasi sekolah sehingga merugikan moril dan materil pihak sekolah, guru, atau tenaga administrasi sekolah</option>
+                <option data-kategori="SangatBerat" data-poin="-100">Membawa, mengedarkan, atau mengkonsumsi minuman keras, narkoba, atau sejenisnya</option>
+                <option data-kategori="SangatBerat" data-poin="-100">Dalang atau otak kegiatan dalam tawuran, berkelahi, main hakim sendiri dengan sekolah lain atau dengan masyarakat</option>
+                <option data-kategori="SangatBerat" data-poin="-100">Membuat berita bohong yang menimbulkan kerugian psikis, moril, dan materil dari pihak lain atas berita bohong tersebut</option>
+                <option data-kategori="SangatBerat" data-poin="-100">Pelaku atau terlibat dalam tindak kejahatan atau melanggar hukum atau melakukan tindak asusila di lingkungan sekolah dan di masyarakat</option>
+                <option data-kategori="SangatBerat" data-poin="-100">Menikah atau hamil dalam masa pendidikan</option>
+                <option data-kategori="SangatBerat" data-poin="-100">Melakukan tindik, tato pada bagian tubuh</option>
               </optgroup>
               <optgroup label="Non-Pelanggaran">
                 <option data-kategori="Prestasi" data-poin="10">Prestasi Positif</option>
@@ -553,7 +712,7 @@
           </div>
           <div class="field">
             <label>Poin (otomatis, bisa disesuaikan)</label>
-            <input type="number" id="kasusPoin" value="-5">
+            <input type="number" id="kasusPoin" value="-2">
           </div>
           <div class="field"><label>Status</label>
             <select id="kasusStatus">
@@ -566,6 +725,77 @@
           <div class="field"><label>Tindakan (opsional)</label><textarea id="kasusTindakan" placeholder="Langkah yang dilakukan..."></textarea></div>
           <button class="btn brass" id="btnSimpanKasus">Simpan Catatan</button>
         </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">00</span>Klasifikasi Pelanggaran</h2>
+      <p class="hint">Uraian berikut membantu wali kelas mengelompokkan pelanggaran menurut tingkat keseriusan dan poin pengurangan.</p>
+      <div class="field">
+        <label>Kelompok 1: Sangat Berat</label>
+        <ul>
+          <li>Memalsukan tanda tangan kepala sekolah, dewan guru, dan tenaga administrasi sekolah sehingga merugikan moril dan materil pihak sekolah, guru, atau tenaga administrasi sekolah.</li>
+          <li>Membawa, mengedarkan, atau mengkonsumsi minuman keras, narkoba, atau sejenisnya.</li>
+          <li>Dalang atau otak kegiatan dalam tawuran, berkelahi, main hakim sendiri dengan sekolah lain atau dengan masyarakat.</li>
+          <li>Membuat berita bohong yang menimbulkan kerugian psikis, moril, dan materil dari pihak lain atas berita bohong tersebut.</li>
+          <li>Pelaku atau terlibat dalam tindak kejahatan atau melanggar hukum atau melakukan tindak asusila di lingkungan sekolah dan di masyarakat.</li>
+          <li>Menikah atau hamil dalam masa pendidikan.</li>
+          <li>Melakukan tindik, tato pada bagian tubuh.</li>
+        </ul>
+      </div>
+      <div class="field">
+        <label>Kelompok 2: Berat</label>
+        <ul>
+          <li>Terlibat dalam kegiatan tawuran, berkelahi, main hakim sendiri.</li>
+          <li>Merusak sarana prasarana sekolah.</li>
+          <li>Memalsukan tanda tangan orang tua.</li>
+          <li>Mengambil hak milik orang lain/mencuri di lingkungan sekolah dan di luar sekolah.</li>
+          <li>Membawa atau menyebarkan berita bohong yang menimbulkan keresahan.</li>
+          <li>Membawa gambar atau video bersifat pornografi.</li>
+          <li>Membawa senjata tajam atau senjata api tanpa sepengetahuan atau izin dari pihak sekolah.</li>
+          <li>Memalsukan dokumen sekolah.</li>
+          <li>Mengikuti organisasi terlarang.</li>
+          <li>Berbicara kasar terhadap guru.</li>
+        </ul>
+      </div>
+      <div class="field">
+        <label>Kelompok 3: Cukup Berat</label>
+        <ul>
+          <li>Membuat izin palsu atau membuat surat tidak masuk sekolah palsu.</li>
+          <li>Meninggalkan sekolah tanpa izin (membolos).</li>
+          <li>Melindungi teman yang bersalah atau memberikan keterangan palsu (bohong).</li>
+          <li>Melompat atau melewati pagar sekolah.</li>
+          <li>Tidak mengikuti upacara.</li>
+          <li>Berkelahi dengan teman sekelas.</li>
+          <li>Mengganggu dan/atau mengacaukan kelas lain.</li>
+          <li>Bersikap tidak sopan, menentang kepala sekolah, guru, atau karyawan lainnya.</li>
+          <li>Menyuruh atau melakukan vandalisme (mengotori sarana sekolah).</li>
+          <li>Memakai pakaian seragam tidak sesuai dengan aturan.</li>
+          <li>Melakukan bullying secara verbal atau tindakan.</li>
+          <li>Merokok di lingkungan sekolah atau di luar lingkungan sekolah.</li>
+        </ul>
+      </div>
+      <div class="field">
+        <label>Kelompok 4: Ringan</label>
+        <ul>
+          <li>Datang terlambat untuk masuk sekolah.</li>
+          <li>Keluar kelas tanpa izin.</li>
+          <li>Mewarnai rambut.</li>
+          <li>Rambut panjang (lebih dari 5 cm).</li>
+          <li>Membawa Handphone (HP) tanpa ada izin dari pihak sekolah.</li>
+          <li>Tidak mengenakan atribut sekolah lengkap.</li>
+          <li>Tidak mengenakan sepatu sesuai aturan.</li>
+          <li>Terlambat memasuki lapangan upacara ketika upacara bendera (Hari Senin).</li>
+          <li>Tidak mengikuti kegiatan pembiasaan kebersihan dan sholat dhuha.</li>
+          <li>Tidak melaksanakan piket kelas atau tugas dari guru.</li>
+          <li>Makan di kelas waktu KBM.</li>
+          <li>Membeli makanan waktu KBM berlangsung.</li>
+          <li>Membuang sampah tidak pada tempatnya.</li>
+          <li>Bermain di tempat parkir dalam upaya mencegah kerusakan atau kehilangan kendaraan bermotor atau sparepart kendaraan.</li>
+          <li>Berhias tidak sesuai dengan aturan sebagai pelajar SMPN 1 Cikalongkulon.</li>
+          <li>Memakai perhiasan berlebihan (memakai gelang, kalung).</li>
+          <li>Berbicara kasar terhadap teman yang tidak sesuai dengan etika.</li>
+        </ul>
       </div>
     </div>
 
@@ -607,7 +837,7 @@
 
     <div class="card">
       <h2><span class="num">03</span>Peringkat Poin Kedisiplinan</h2>
-      <p class="hint">Semua siswa mulai dari 100 poin. Poin berkurang sesuai kategori pelanggaran (Ringan -5, Sedang -10, Berat -25, Sangat Berat -50) dan bisa naik lagi lewat prestasi.</p>
+      <p class="hint">Semua siswa mulai dari 100 poin. Poin berkurang sesuai kategori pelanggaran (Ringan -2, Cukup Berat -5, Berat -50, Sangat Berat -100) dan bisa naik lagi lewat prestasi.</p>
       <div class="toolbar">
         <select id="poinKelasFilter"><option value="">Semua kelas</option></select>
       </div>
@@ -631,6 +861,12 @@
       <p class="hint">Siswa diurutkan dari jumlah Izin terbanyak, berdasarkan rentang tanggal pada Rekap Kehadiran di atas.</p>
       <div id="kepsekIzinRankWrap"></div>
     </div>
+
+    <div class="card">
+      <h2><span class="num">07</span>Peringkat Jumlah Terlambat</h2>
+      <p class="hint">Siswa diurutkan dari jumlah Terlambat terbanyak, berdasarkan rentang tanggal pada Rekap Kehadiran di atas.</p>
+      <div id="kepsekTerlambatRankWrap"></div>
+    </div>
   </section>
 
 </main>
@@ -646,16 +882,32 @@
   <div class="loading-card">
     <div class="loading-logo"><img id="loadingLogoImg" src="" alt="Logo sekolah"></div>
     <div class="loading-body">
-      <p class="loading-title"> SMPN 2 KARANG TENGAH</p>
+      <p class="loading-title"> SMP Negeri 2 Karangtengah</p>
       <p class="loading-subtitle" id="loadingMsg">Mengambil data dari Google Sheets...</p>
       <div class="loading-bar-track"><div class="loading-bar-fill" id="loadingBarFill"></div></div>
       <div class="loading-pct" id="loadingPct">0%</div>
-      <button class="loading-cancel" id="loadingCancelBtn">Batalkan &amp; tutup</button>
+      <div class="loading-btn-row" id="loadingBtnRow">
+        <button class="loading-cancel" id="loadingRetryBtn">Coba Lagi</button>
+        <button class="loading-cancel" id="loadingCancelBtn">Batalkan &amp; tutup</button>
+      </div>
     </div>
   </div>
 </div>
 <div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
 <div id="printShell" class="print-shell"></div>
+
+<!-- ===================== MODAL: KETERANGAN TUGAS GURU (muncul saat guru ditandai tidak hadir) ===================== -->
+<div class="modal-overlay" id="tugasModalOverlay">
+  <div class="modal-sheet">
+    <h3 id="tugasModalNama">Keterangan Guru</h3>
+    <p class="hint" id="tugasModalHint">Apakah guru ini memberikan tugas untuk siswa selama tidak hadir?</p>
+    <div class="btn-row">
+      <button class="btn brass" id="btnTugasAda">✓ Memberikan Tugas</button>
+      <button class="btn danger" id="btnTugasTidak" style="border-color:var(--alpa); margin-top:8px;">✕ Tidak Memberikan Tugas</button>
+      <button class="btn secondary" id="btnTugasBatal" style="margin-top:8px;">Batal</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -670,16 +922,16 @@ document.getElementById('loadingLogoImg').src = LOGO_DATA_URI;
 /* =====================================================================
    SCRIPT PENGGANTI — LAZY LOADING + BUG-FIX VERSION
    Perbaikan utama pada rilis ini:
-   1. fetchWithTimeout() — semua panggilan ke Apps Script kini punya batas
-      waktu (15 detik). Sebelumnya jika fetch() menggantung (mis. deployment
-      Apps Script tidak public / koneksi terputus), overlay loading tidak
-      pernah tertutup sehingga SELURUH LAYAR termasuk tab menu di bagian
-      bawah menjadi tidak bisa ditekan.
+   1. fetchWithTimeout() — panggilan ke Apps Script TIDAK dibatasi waktu
+      otomatis lagi; request akan terus menunggu sampai server merespons.
+      Jika koneksi lambat/menggantung, pengguna tinggal menekan tombol
+      "Batalkan & tutup" (muncul otomatis setelah 30 detik) untuk
+      menghentikan request tersebut secara manual kapan saja.
    2. nav.tabbar diberi z-index lebih tinggi dari #loadingOverlay, dan
       overlay memakai pointer-events:none saat tidak tampil, sehingga tab
       tetap bisa ditekan walau ada masalah pada proses loading.
    3. Tombol "Batalkan & tutup" muncul otomatis jika loading berlangsung
-      lebih dari 8 detik, agar pengguna tidak pernah terjebak di overlay.
+      lebih dari 30 detik, agar pengguna tidak pernah terjebak di overlay.
    Semua ID elemen HTML TIDAK berubah, jadi HTML/CSS tidak perlu diubah.
    ===================================================================== */
 
@@ -696,6 +948,8 @@ let kehadiranRangeCache = {};    // key: `${kelas}|${start}|${end}`      -> arra
 let kasusCache = {};             // key: kelas (atau 'all')              -> array kasus
 let umpanBalikCache = {};        // key: kelas (atau 'all')              -> array umpan balik orang tua
 let currentGuruRecord = {};
+let currentGuruKeterangan = {}; // key: studentKey -> 'Memberikan Tugas' | 'Tidak Memberikan Tugas' | '' (khusus kelas "Guru")
+const KELAS_GURU = 'Guru'; // nama kelas khusus yang dianggap sebagai data kehadiran guru (bukan siswa)
 let selectedKasusSiswaNos = new Set(); // no siswa yang dicentang di dropdown checklist "Wali Kelas"
 const ALPA_THRESHOLD = 3;
 const STATUS_LABEL = {PerluTindakan:'Perlu Tindakan', DalamProses:'Dalam Proses', Selesai:'Selesai'};
@@ -778,19 +1032,24 @@ function isConfigured(){
   return GAS_URL && GAS_URL.indexOf('https://script.google.com') === 0;
 }
 
-/* --- FIX #1: fetch dengan timeout, supaya overlay loading tidak pernah menggantung selamanya --- */
-async function fetchWithTimeout(url, options = {}, timeoutMs = 15000){
+/* --- FIX #1: fetch TANPA batas waktu otomatis. Request akan terus menunggu
+   respons dari server sampai selesai, ATAU sampai pengguna menekan tombol
+   "Batalkan & tutup" pada overlay loading. Semua AbortController yang
+   sedang aktif disimpan di sini supaya tombol batal bisa menghentikannya. --- */
+let activeAbortControllers = new Set();
+
+async function fetchWithTimeout(url, options = {}){
   const controller = new AbortController();
-  const timer = setTimeout(()=>controller.abort(), timeoutMs);
+  activeAbortControllers.add(controller);
   try{
     return await fetch(url, { ...options, signal: controller.signal });
   }catch(err){
     if(err.name === 'AbortError'){
-      throw new Error('Waktu permintaan habis (15 detik). Periksa koneksi internet, atau pastikan Web App Apps Script sudah di-deploy dengan akses "Anyone", lalu coba lagi.');
+      throw new Error('Permintaan dibatalkan oleh pengguna.');
     }
     throw err;
   }finally{
-    clearTimeout(timer);
+    activeAbortControllers.delete(controller);
   }
 }
 
@@ -919,11 +1178,11 @@ function showLoading(msg){
     setLoadingPct(pct);
   }, 120); // interval dipercepat karena payload sekarang jauh lebih kecil
 
-  /* --- FIX #3: jika loading > 8 detik, tampilkan tombol "Batalkan & tutup"
+  /* --- FIX #3: jika loading > 30 detik, tampilkan tombol "Batalkan & tutup"
      supaya pengguna tidak pernah terjebak walau ada kondisi tak terduga --- */
   loadingCancelTimer = setTimeout(()=>{
     cancelBtn.classList.add('show');
-  }, 8000);
+  }, 30000);
 }
 function hideLoading(){
   clearInterval(loadingProgressTimer);
@@ -936,8 +1195,10 @@ function hideLoading(){
   }, 200);
 }
 document.getElementById('loadingCancelBtn').addEventListener('click', ()=>{
+  activeAbortControllers.forEach(c => c.abort());
+  activeAbortControllers.clear();
   hideLoading();
-  toast('Proses dibatalkan. Coba tekan Sinkron lagi bila perlu.', true);
+  toast('Proses dibatalkan.', true);
 });
 
 let toastTimer;
@@ -1075,6 +1336,7 @@ function renderDataSiswaList(){
   wrap.querySelectorAll('[data-del-no]').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
       const no = btn.dataset.delNo, kelas = btn.dataset.delKelas;
+      if(!confirmHapusDenganPassword('Yakin hapus data siswa No. '+no+' ('+kelas+')? Tindakan ini tidak bisa dibatalkan.')) return;
       showLoading('Menghapus siswa...');
       try{
         await apiPost('deleteSiswa', {no, kelas});
@@ -1091,7 +1353,26 @@ function renderDataSiswaList(){
 document.getElementById('dsSearch').addEventListener('input', renderDataSiswaList);
 document.getElementById('dsKelasFilter').addEventListener('change', renderDataSiswaList);
 
+/* ---- Password admin untuk menambah siswa (manual maupun impor file) ----
+   Melindungi supaya bukan-admin tidak bisa seenaknya menambah/mengunggah data
+   siswa. Password diminta sekali per sesi browser (tab ini), lalu tersimpan
+   sementara di sessionStorage sampai tab ditutup. Ganti nilai di bawah sesuai
+   kebutuhan. */
+const ADMIN_PASSWORD = 'ADMIN123';
+function cekAksesAdmin(){
+  if(sessionStorage.getItem('adminUnlocked') === 'yes') return true;
+  const inputPass = prompt('Masukkan password admin untuk menambah data siswa:');
+  if(inputPass === null) return false;
+  if(inputPass !== ADMIN_PASSWORD){
+    toast('Password salah. Aksi dibatalkan.', true);
+    return false;
+  }
+  sessionStorage.setItem('adminUnlocked', 'yes');
+  return true;
+}
+
 document.getElementById('btnAddManual').addEventListener('click', async ()=>{
+  if(!cekAksesAdmin()) return;
   const no = document.getElementById('manNo').value.trim();
   const nama = document.getElementById('manNama').value.trim();
   const kelas = document.getElementById('manKelas').value.trim();
@@ -1110,8 +1391,23 @@ document.getElementById('btnAddManual').addEventListener('click', async ()=>{
   finally{ hideLoading(); }
 });
 
+/* ---- Password konfirmasi untuk SEMUA aksi hapus (satuan maupun keseluruhan) ----
+   Melindungi supaya data tidak terhapus tidak sengaja. Ganti nilai di bawah
+   sesuai kebutuhan. */
+const DELETE_PASSWORD = 'HAPUS123';
+function confirmHapusDenganPassword(pesanKonfirmasi){
+  if(!confirm(pesanKonfirmasi)) return false;
+  const inputPass = prompt('Masukkan password untuk konfirmasi penghapusan:');
+  if(inputPass === null) return false;
+  if(inputPass !== DELETE_PASSWORD){
+    toast('Password salah. Penghapusan dibatalkan.', true);
+    return false;
+  }
+  return true;
+}
+
 document.getElementById('btnResetAll').addEventListener('click', async ()=>{
-  if(!confirm('Yakin hapus SEMUA data siswa, kehadiran, dan catatan kasus di Google Sheets? Tindakan ini tidak bisa dibatalkan.')) return;
+  if(!confirmHapusDenganPassword('Yakin hapus SEMUA data siswa, kehadiran, dan catatan kasus di Google Sheets? Tindakan ini tidak bisa dibatalkan.')) return;
   showLoading('Menghapus semua data...');
   try{
     await apiPost('resetAll', {});
@@ -1127,11 +1423,11 @@ document.getElementById('btnResetAll').addEventListener('click', async ()=>{
 /* ---- import spreadsheet ---- */
 const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('fileInput');
-dropzone.addEventListener('click', ()=>fileInput.click());
+dropzone.addEventListener('click', ()=>{ if(!cekAksesAdmin()) return; fileInput.click(); });
 dropzone.addEventListener('dragover', e=>{e.preventDefault(); dropzone.classList.add('drag');});
 dropzone.addEventListener('dragleave', ()=>dropzone.classList.remove('drag'));
-dropzone.addEventListener('drop', e=>{e.preventDefault(); dropzone.classList.remove('drag'); if(e.dataTransfer.files.length) handleImportFile(e.dataTransfer.files[0]);});
-fileInput.addEventListener('change', e=>{ if(e.target.files.length) handleImportFile(e.target.files[0]); fileInput.value=''; });
+dropzone.addEventListener('drop', e=>{e.preventDefault(); dropzone.classList.remove('drag'); if(!e.dataTransfer.files.length) return; if(!cekAksesAdmin()) return; handleImportFile(e.dataTransfer.files[0]);});
+fileInput.addEventListener('change', e=>{ if(!e.target.files.length){ return; } if(!cekAksesAdmin()){ fileInput.value=''; return; } handleImportFile(e.target.files[0]); fileInput.value=''; });
 
 function handleImportFile(file){
   const statusEl = document.getElementById('importStatus');
@@ -1188,6 +1484,16 @@ function renderGuruKelasOptions(){
   }
 }
 document.getElementById('guruTanggal').value = todayISO();
+const GURU_PETUGAS_KEY = 'bkKehadiran_guruPetugas';
+(function initGuruPetugas(){
+  try{
+    const saved = localStorage.getItem(GURU_PETUGAS_KEY);
+    if(saved) document.getElementById('guruPetugas').value = saved;
+  }catch(e){}
+})();
+document.getElementById('guruPetugas').addEventListener('input', (e)=>{
+  try{ localStorage.setItem(GURU_PETUGAS_KEY, e.target.value); }catch(e){}
+});
 const defaultRekapStart = () => {
   const d = new Date(); d.setDate(d.getDate()-30); return d.toISOString().slice(0,10);
 };
@@ -1198,12 +1504,60 @@ async function loadCurrentGuruRecord(){
   const kelas = document.getElementById('guruKelas').value;
   const tanggal = document.getElementById('guruTanggal').value;
   currentGuruRecord = {};
+  currentGuruKeterangan = {};
   if(!tanggal || !kelas) return;
   const records = await loadKehadiranByDate(tanggal, kelas);
   const existing = {};
-  records.forEach(r => existing[`${r.kelas}::${r.no}`] = r.status);
+  const existingKet = {};
+  records.forEach(r => { existing[`${r.kelas}::${r.no}`] = r.status; existingKet[`${r.kelas}::${r.no}`] = r.keterangan || ''; });
   const students = kelas === 'all' ? siswaList : studentsInKelas(kelas);
-  students.forEach(s=>{ currentGuruRecord[studentKey(s)] = existing[studentKey(s)] || 'Hadir'; });
+  students.forEach(s=>{
+    const key = studentKey(s);
+    currentGuruRecord[key] = existing[key] || 'Hadir';
+    currentGuruKeterangan[key] = existingKet[key] || '';
+  });
+}
+
+/* ---- Popup "Memberikan Tugas / Tidak Memberikan Tugas", khusus kelas "Guru" ----
+   Dipanggil setiap kali status seorang "siswa" yang kelasnya KELAS_GURU diubah
+   menjadi selain Hadir, supaya kehadiran guru piket/pengganti bisa dimonitor
+   sekaligus dengan info apakah beliau meninggalkan tugas untuk siswa. */
+function openTugasModal(nama, statusBaru){
+  return new Promise(resolve=>{
+    const overlay = document.getElementById('tugasModalOverlay');
+    document.getElementById('tugasModalNama').textContent = `${nama} — ${statusBaru}`;
+    document.getElementById('tugasModalHint').textContent = 'Apakah guru ini memberikan tugas untuk siswa selama tidak hadir?';
+    overlay.classList.add('show');
+
+    const btnAda = document.getElementById('btnTugasAda');
+    const btnTidak = document.getElementById('btnTugasTidak');
+    const btnBatal = document.getElementById('btnTugasBatal');
+
+    function cleanup(result){
+      overlay.classList.remove('show');
+      btnAda.removeEventListener('click', onAda);
+      btnTidak.removeEventListener('click', onTidak);
+      btnBatal.removeEventListener('click', onBatal);
+      resolve(result);
+    }
+    function onAda(){ cleanup('Memberikan Tugas'); }
+    function onTidak(){ cleanup('Tidak Memberikan Tugas'); }
+    function onBatal(){ cleanup(null); }
+
+    btnAda.addEventListener('click', onAda);
+    btnTidak.addEventListener('click', onTidak);
+    btnBatal.addEventListener('click', onBatal);
+  });
+}
+
+function tugasBadgeHtml(key, kelas){
+  if(kelas !== KELAS_GURU) return '';
+  const status = currentGuruRecord[key];
+  if(status === 'Hadir') return '';
+  const ket = currentGuruKeterangan[key] || '';
+  if(ket === 'Memberikan Tugas') return `<span class="tugas-badge ada" data-key="${escapeHtml(key)}">📝 Memberikan Tugas</span>`;
+  if(ket === 'Tidak Memberikan Tugas') return `<span class="tugas-badge tidak" data-key="${escapeHtml(key)}">🚫 Tidak Memberikan Tugas</span>`;
+  return `<span class="tugas-badge kosong" data-key="${escapeHtml(key)}">⚠️ Isi keterangan tugas</span>`;
 }
 
 function renderGuruTable(){
@@ -1217,31 +1571,60 @@ function renderGuruTable(){
     wrap.innerHTML = `<div class="empty-state"><span class="ico">👤</span>Belum ada siswa di kelas ini.</div>`;
     document.getElementById('guruSummary').innerHTML=''; return;
   }
-  const statuses = ['Hadir','Sakit','Izin','Alpa'];
-  wrap.innerHTML = students.map(s=>`
-    <div class="status-row">
-      <div class="who"><div class="name">${escapeHtml(s.nama)}</div><div class="no">No. ${escapeHtml(s.no)} &middot; ${escapeHtml(s.kelas)}</div></div>
-      <div class="status-btns" data-key="${escapeHtml(studentKey(s))}">
-        ${statuses.map(st=>`<button class="st-btn ${currentGuruRecord[studentKey(s)]===st?'active':''}" data-st="${st}">${st==='Hadir'?'H':st==='Sakit'?'S':st==='Izin'?'I':'A'}</button>`).join('')}
+  const statuses = ['Hadir','Sakit','Izin','Alpa','Terlambat'];
+  const statusInisial = {Hadir:'H', Sakit:'S', Izin:'I', Alpa:'A', Terlambat:'T'};
+  wrap.innerHTML = students.map(s=>{
+    const key = studentKey(s);
+    const isGuru = s.kelas === KELAS_GURU;
+    return `
+    <div class="status-row ${isGuru?'guru-row':''}">
+      <div class="who">
+        <div class="name">${escapeHtml(s.nama)}</div>
+        <div class="no">No. ${escapeHtml(s.no)} &middot; ${escapeHtml(s.kelas)}</div>
+        ${isGuru ? `<div>${tugasBadgeHtml(key, s.kelas)}</div>` : ''}
+      </div>
+      <div class="status-btns" data-key="${escapeHtml(key)}" data-nama="${escapeHtml(s.nama)}" data-kelas="${escapeHtml(s.kelas)}">
+        ${statuses.map(st=>`<button class="st-btn ${currentGuruRecord[key]===st?'active':''}" data-st="${st}">${statusInisial[st]}</button>`).join('')}
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 
   wrap.querySelectorAll('.status-btns').forEach(group=>{
     const key = group.dataset.key;
+    const nama = group.dataset.nama;
+    const kelasSiswa = group.dataset.kelas;
     group.querySelectorAll('.st-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        currentGuruRecord[key] = btn.dataset.st;
-        group.querySelectorAll('.st-btn').forEach(b=>b.classList.toggle('active', b===btn));
-        renderGuruSummary();
+      btn.addEventListener('click', async ()=>{
+        const statusBaru = btn.dataset.st;
+        const statusLama = currentGuruRecord[key];
+        if(kelasSiswa === KELAS_GURU && statusBaru !== 'Hadir'){
+          const hasil = await openTugasModal(nama, statusBaru);
+          if(hasil === null) return; // dibatalkan, status tidak berubah
+          currentGuruKeterangan[key] = hasil;
+        } else if(kelasSiswa === KELAS_GURU && statusBaru === 'Hadir'){
+          currentGuruKeterangan[key] = ''; // hadir lagi -> keterangan tugas dikosongkan
+        }
+        currentGuruRecord[key] = statusBaru;
+        renderGuruTable();
       });
     });
+    // klik badge keterangan tugas untuk mengubah pilihan kembali
+    const badge = wrap.querySelector(`.tugas-badge[data-key="${CSS.escape(key)}"]`);
+    if(badge){
+      badge.addEventListener('click', async ()=>{
+        const hasil = await openTugasModal(nama, currentGuruRecord[key]);
+        if(hasil === null) return;
+        currentGuruKeterangan[key] = hasil;
+        renderGuruTable();
+      });
+    }
   });
   renderGuruSummary();
 }
 
 function renderGuruSummary(){
-  const counts = {Hadir:0, Sakit:0, Izin:0, Alpa:0};
+  const counts = {Hadir:0, Sakit:0, Izin:0, Alpa:0, Terlambat:0};
   Object.values(currentGuruRecord).forEach(st=>{ if(counts[st]!==undefined) counts[st]++; });
   document.getElementById('guruSummary').innerHTML = Object.keys(counts).map(st=>`
     <div class="summary-chip ${st}"><div class="n">${counts[st]}</div><div class="l">${st}</div></div>
@@ -1262,11 +1645,11 @@ async function renderGuruRekap(){
   catch(err){ wrap.innerHTML = `<div class="empty-state"><span class="ico">⚠️</span>Gagal memuat: ${escapeHtml(err.message)}</div>`; return; }
 
   const relevantStudents = kelas === 'all' ? siswaList : studentsInKelas(kelas);
-  const counts = {Hadir:0, Sakit:0, Izin:0, Alpa:0};
+  const counts = {Hadir:0, Sakit:0, Izin:0, Alpa:0, Terlambat:0};
   filtered.forEach(r=>{ if(counts[r.status] !== undefined) counts[r.status]++; });
 
   const perStudentMap = {};
-  relevantStudents.forEach(s=>{ perStudentMap[`${s.kelas}::${s.no}`] = {nama:s.nama, kelas:s.kelas, no:s.no, Hadir:0, Sakit:0, Izin:0, Alpa:0}; });
+  relevantStudents.forEach(s=>{ perStudentMap[`${s.kelas}::${s.no}`] = {nama:s.nama, kelas:s.kelas, no:s.no, Hadir:0, Sakit:0, Izin:0, Alpa:0, Terlambat:0}; });
   filtered.forEach(r=>{
     const key = `${r.kelas}::${r.no}`;
     if(perStudentMap[key] && counts[r.status] !== undefined){ perStudentMap[key][r.status] = (perStudentMap[key][r.status] || 0) + 1; }
@@ -1283,9 +1666,38 @@ async function renderGuruRekap(){
         <div class="summary-chip Sakit"><div class="n">${item.Sakit}</div><div class="l">Sakit</div></div>
         <div class="summary-chip Izin"><div class="n">${item.Izin}</div><div class="l">Izin</div></div>
         <div class="summary-chip Alpa"><div class="n">${item.Alpa}</div><div class="l">Alpa</div></div>
+        <div class="summary-chip Terlambat"><div class="n">${item.Terlambat}</div><div class="l">Terlambat</div></div>
       </div>
     </div>
   `).join('');
+
+  // Khusus kelas "Guru": tampilkan riwayat ketidakhadiran lengkap dengan
+  // keterangan tugas, supaya kehadiran guru benar-benar bisa dimonitor.
+  const guruTugasSection = (kelas === KELAS_GURU || kelas === 'all') ? (()=>{
+    const riwayat = filtered
+      .filter(r => r.kelas === KELAS_GURU && r.status !== 'Hadir')
+      .sort((a,b)=> b.tanggal.localeCompare(a.tanggal));
+    if(riwayat.length === 0) return '';
+    const rows = riwayat.map(r=>{
+      const ket = r.keterangan || '';
+      const badgeClass = ket === 'Memberikan Tugas' ? 'ada' : (ket === 'Tidak Memberikan Tugas' ? 'tidak' : 'kosong');
+      const badgeText = ket || 'Belum ada keterangan';
+      return `
+      <div class="status-row" style="padding:10px 4px;">
+        <div class="who">
+          <div class="name">${escapeHtml(r.nama)} <span class="kelas-pill" style="margin-left:4px;">${escapeHtml(r.status)}</span></div>
+          <div class="no">${fmtTanggal(r.tanggal)}</div>
+          <span class="tugas-badge ${badgeClass}" style="cursor:default;">${badgeClass==='ada'?'📝':badgeClass==='tidak'?'🚫':'⚠️'} ${escapeHtml(badgeText)}</span>
+        </div>
+      </div>`;
+    }).join('');
+    return `
+      <div style="margin-top:16px;">
+        <div class="muted" style="margin-bottom:6px;">Riwayat ketidakhadiran guru &amp; keterangan tugas</div>
+        ${rows}
+      </div>
+    `;
+  })() : '';
 
   wrap.innerHTML = `
     <div class="card" style="margin-bottom:0;">
@@ -1296,11 +1708,13 @@ async function renderGuruRekap(){
         <div class="summary-chip Sakit"><div class="n">${counts.Sakit}</div><div class="l">Sakit</div></div>
         <div class="summary-chip Izin"><div class="n">${counts.Izin}</div><div class="l">Izin</div></div>
         <div class="summary-chip Alpa"><div class="n">${counts.Alpa}</div><div class="l">Alpa</div></div>
+        <div class="summary-chip Terlambat"><div class="n">${counts.Terlambat}</div><div class="l">Terlambat</div></div>
       </div>
       <div style="margin-top:12px;">
         <div class="muted" style="margin-bottom:6px;">Rekap per siswa</div>
         ${perStudentRows}
       </div>
+      ${guruTugasSection}
     </div>
   `;
 }
@@ -1321,11 +1735,11 @@ async function printGuruRekap(){
     const sections = classes.map(kelas=>{
       const relevantStudents = studentsInKelas(kelas);
       const filtered = dataPerKelas[kelas];
-      const counts = {Hadir:0, Sakit:0, Izin:0, Alpa:0};
+      const counts = {Hadir:0, Sakit:0, Izin:0, Alpa:0, Terlambat:0};
       filtered.forEach(r=>{ if(counts[r.status] !== undefined) counts[r.status]++; });
 
       const perStudentMap = {};
-      relevantStudents.forEach(s=>{ perStudentMap[`${s.kelas}::${s.no}`] = {nama:s.nama, kelas:s.kelas, no:s.no, Hadir:0, Sakit:0, Izin:0, Alpa:0}; });
+      relevantStudents.forEach(s=>{ perStudentMap[`${s.kelas}::${s.no}`] = {nama:s.nama, kelas:s.kelas, no:s.no, Hadir:0, Sakit:0, Izin:0, Alpa:0, Terlambat:0}; });
       filtered.forEach(r=>{
         const key = `${r.kelas}::${r.no}`;
         if(perStudentMap[key]) perStudentMap[key][r.status] = (perStudentMap[key][r.status] || 0) + 1;
@@ -1342,6 +1756,7 @@ async function printGuruRekap(){
             <div class="summary-chip Sakit"><div class="n">${item.Sakit}</div><div class="l">Sakit</div></div>
             <div class="summary-chip Izin"><div class="n">${item.Izin}</div><div class="l">Izin</div></div>
             <div class="summary-chip Alpa"><div class="n">${item.Alpa}</div><div class="l">Alpa</div></div>
+            <div class="summary-chip Terlambat"><div class="n">${item.Terlambat}</div><div class="l">Terlambat</div></div>
           </div>
         </div>
       `).join('');
@@ -1355,6 +1770,7 @@ async function printGuruRekap(){
             <div class="summary-chip Sakit"><div class="n">${counts.Sakit}</div><div class="l">Sakit</div></div>
             <div class="summary-chip Izin"><div class="n">${counts.Izin}</div><div class="l">Izin</div></div>
             <div class="summary-chip Alpa"><div class="n">${counts.Alpa}</div><div class="l">Alpa</div></div>
+            <div class="summary-chip Terlambat"><div class="n">${counts.Terlambat}</div><div class="l">Terlambat</div></div>
           </div>
           <div style="margin-top:12px;">
             <div class="muted" style="margin-bottom:6px;">Rekap per siswa</div>
@@ -1393,7 +1809,7 @@ document.getElementById('btnCetakRekap').addEventListener('click', printGuruReka
 document.getElementById('btnHadirSemua').addEventListener('click', ()=>{
   const kelas = document.getElementById('guruKelas').value;
   if(!kelas){ toast('Pilih kelas terlebih dahulu', true); return; }
-  Object.keys(currentGuruRecord).forEach(key=> currentGuruRecord[key] = 'Hadir');
+  Object.keys(currentGuruRecord).forEach(key=>{ currentGuruRecord[key] = 'Hadir'; currentGuruKeterangan[key] = ''; });
   renderGuruTable();
   toast('Semua siswa ditandai Hadir');
 });
@@ -1401,12 +1817,30 @@ document.getElementById('btnHadirSemua').addEventListener('click', ()=>{
 document.getElementById('btnSimpanKehadiran').addEventListener('click', async ()=>{
   const kelas = document.getElementById('guruKelas').value;
   const tanggal = document.getElementById('guruTanggal').value;
+  const petugas = document.getElementById('guruPetugas').value.trim();
   if(!kelas || !tanggal){ toast('Pilih kelas dan tanggal', true); return; }
+  if(!petugas){ toast('Isi nama petugas piket terlebih dahulu', true); return; }
   const students = kelas === 'all' ? siswaList : studentsInKelas(kelas);
-  const records = students.map(s=>({no:s.no, nama:s.nama, kelas:s.kelas, status:currentGuruRecord[studentKey(s)]||'Hadir'}));
+
+  // Validasi: setiap guru (kelas === "Guru") yang tidak hadir wajib punya
+  // keterangan "Memberikan Tugas" / "Tidak Memberikan Tugas" sebelum disimpan,
+  // supaya kehadiran guru benar-benar bisa dimonitor lengkap dengan info tugas.
+  const guruBelumLengkap = students.find(s=> s.kelas === KELAS_GURU
+    && currentGuruRecord[studentKey(s)] !== 'Hadir'
+    && !currentGuruKeterangan[studentKey(s)]);
+  if(guruBelumLengkap){
+    toast(`Isi dulu keterangan tugas untuk ${guruBelumLengkap.nama}`, true);
+    return;
+  }
+
+  const records = students.map(s=>({
+    no:s.no, nama:s.nama, kelas:s.kelas,
+    status:currentGuruRecord[studentKey(s)]||'Hadir',
+    keterangan: s.kelas === KELAS_GURU ? (currentGuruKeterangan[studentKey(s)] || '') : ''
+  }));
   showLoading('Menyimpan kehadiran...');
   try{
-    await apiPost('saveKehadiran', {tanggal, kelas, records});
+    await apiPost('saveKehadiran', {tanggal, kelas, records, petugas});
     /* FIX: sebelumnya hanya key `${kelas}|${tanggal}` yang diperbarui di cache,
        sehingga key `all|${tanggal}` (dipakai tab Kesiswaan untuk rekap semua
        kelas) bisa tetap berisi data lama/kosong jika sudah pernah di-cache
@@ -1548,8 +1982,18 @@ async function renderWaliPanel(){
   const kartuCard = document.getElementById('waliKartuCard');
   const listCard = document.getElementById('waliListCard');
   const umpanBalikCard = document.getElementById('waliUmpanBalikCard');
-  if(!kelas){ form.style.display='none'; kartuCard.style.display='none'; listCard.style.display='none'; umpanBalikCard.style.display='none'; return; }
-  form.style.display='block'; kartuCard.style.display='block'; listCard.style.display='block'; umpanBalikCard.style.display='block';
+  const absensiCard = document.getElementById('waliAbsensiCard');
+  const rentangCard = document.getElementById('waliRentangCard');
+  if(!kelas){ form.style.display='none'; kartuCard.style.display='none'; listCard.style.display='none'; umpanBalikCard.style.display='none'; absensiCard.style.display='none'; rentangCard.style.display='none'; return; }
+  form.style.display='block'; kartuCard.style.display='block'; listCard.style.display='block'; umpanBalikCard.style.display='block'; absensiCard.style.display='block'; rentangCard.style.display='block';
+
+  document.getElementById('ahKelasChip').textContent = kelas;
+  if(!document.getElementById('ahTanggal').value) document.getElementById('ahTanggal').value = todayISO();
+  renderAbsensiHarian(kelas);
+
+  if(!document.getElementById('waliRentangStart').value) document.getElementById('waliRentangStart').value = defaultRekapStart();
+  if(!document.getElementById('waliRentangEnd').value) document.getElementById('waliRentangEnd').value = todayISO();
+  document.getElementById('waliRentangWrap').innerHTML = '';
 
   resetKasusSiswaDropdown();
   syncPoinFromJenis();
@@ -1577,6 +2021,153 @@ async function renderWaliPanel(){
     document.getElementById('waliUmpanBalikWrap').innerHTML = `<div class="empty-state"><span class="ico">⚠️</span>Gagal memuat: ${escapeHtml(err.message)}</div>`;
   }
 }
+
+/* ---- Kartu "Absensi Harian" — ringkasan kehadiran kelas pada satu tanggal ---- */
+document.getElementById('ahTanggal').addEventListener('change', ()=>{
+  const kelas = document.getElementById('waliKelas').value;
+  if(kelas) renderAbsensiHarian(kelas);
+});
+
+async function renderAbsensiHarian(kelas){
+  const statsWrap = document.getElementById('ahStats');
+  const listWrap = document.getElementById('ahListWrap');
+  const tanggal = document.getElementById('ahTanggal').value || todayISO();
+  const statuses = ['Hadir','Sakit','Izin','Alpa','Terlambat'];
+  statsWrap.innerHTML = statuses.map(st=>`<div class="ah-stat ${st}"><div class="hd">${st}</div><div class="val">&hellip;</div></div>`).join('');
+  listWrap.innerHTML = '<div class="ah-empty">Memuat data absensi...</div>';
+  let records;
+  try{ records = await loadKehadiranByDate(tanggal, kelas); }
+  catch(err){
+    statsWrap.innerHTML = statuses.map(st=>`<div class="ah-stat ${st}"><div class="hd">${st}</div><div class="val">-</div></div>`).join('');
+    listWrap.innerHTML = `<div class="ah-empty">Gagal memuat: ${escapeHtml(err.message)}</div>`;
+    return;
+  }
+
+  const counts = {Hadir:0, Sakit:0, Izin:0, Alpa:0, Terlambat:0};
+  records.forEach(r=>{ if(counts[r.status] !== undefined) counts[r.status]++; });
+  statsWrap.innerHTML = statuses.map(st=>`<div class="ah-stat ${st}"><div class="hd">${st}</div><div class="val">${counts[st]}</div></div>`).join('');
+
+  const petugasInfoEl = document.getElementById('ahPetugasInfo');
+  const petugasSet = [...new Set(records.map(r=>r.petugas).filter(Boolean))];
+  petugasInfoEl.innerHTML = petugasSet.length
+    ? `Diinput oleh: <b>${escapeHtml(petugasSet.join(', '))}</b>`
+    : (records.length ? 'Petugas piket belum tercatat untuk tanggal ini.' : '');
+
+  if(records.length === 0){
+    listWrap.innerHTML = `<div class="ah-empty">Belum ada data absensi untuk ${escapeHtml(kelas)} pada ${fmtTanggal(tanggal)}.</div>`;
+    return;
+  }
+
+  const tidakHadir = records.filter(r=> r.status !== 'Hadir')
+    .sort((a,b)=> (a.no+'').localeCompare(b.no+'','id',{numeric:true}));
+
+  if(tidakHadir.length === 0){
+    listWrap.innerHTML = `<div class="ah-empty">Semua siswa hadir pada ${fmtTanggal(tanggal)} 🎉</div>`;
+    return;
+  }
+
+  listWrap.innerHTML = tidakHadir.map((r,i)=>`
+    <div class="ah-item">
+      <div style="display:flex; align-items:center; min-width:0;">
+        <span class="ah-no">${i+1}.</span>
+        <div style="min-width:0;">
+          <span class="ah-name">${escapeHtml(r.nama)}</span>
+          ${r.petugas ? `<div class="ah-petugas">Dicatat oleh: ${escapeHtml(r.petugas)}</div>` : ''}
+        </div>
+      </div>
+      <span class="ah-status ${r.status}">${escapeHtml(r.status)}</span>
+    </div>
+  `).join('');
+}
+
+/* ---- Kartu "Kehadiran per Rentang Tanggal" (Wali Kelas) — rekap + riwayat
+   harian lengkap dengan nama petugas piket yang menginput tiap tanggal ---- */
+async function renderWaliRentang(){
+  const kelas = document.getElementById('waliKelas').value;
+  if(!kelas) return;
+  const start = document.getElementById('waliRentangStart').value;
+  const end = document.getElementById('waliRentangEnd').value;
+  const wrap = document.getElementById('waliRentangWrap');
+  if(!start || !end){ wrap.innerHTML = '<div class="empty-state"><span class="ico">📅</span>Isi rentang tanggal terlebih dahulu.</div>'; return; }
+  if(new Date(start+'T00:00:00') > new Date(end+'T00:00:00')){ wrap.innerHTML = '<div class="empty-state"><span class="ico">⚠️</span>Rentang tanggal tidak valid.</div>'; return; }
+
+  wrap.innerHTML = '<div class="empty-state"><span class="ico">⏳</span>Memuat data...</div>';
+  let records;
+  try{ records = await loadKehadiranRange(kelas, start, end); }
+  catch(err){ wrap.innerHTML = `<div class="empty-state"><span class="ico">⚠️</span>Gagal memuat: ${escapeHtml(err.message)}</div>`; return; }
+
+  const counts = {Hadir:0, Sakit:0, Izin:0, Alpa:0, Terlambat:0};
+  records.forEach(r=>{ if(counts[r.status] !== undefined) counts[r.status]++; });
+
+  const relevantStudents = studentsInKelas(kelas);
+  const perStudentMap = {};
+  relevantStudents.forEach(s=>{ perStudentMap[`${s.kelas}::${s.no}`] = {nama:s.nama, no:s.no, Hadir:0, Sakit:0, Izin:0, Alpa:0, Terlambat:0}; });
+  records.forEach(r=>{
+    const key = `${r.kelas}::${r.no}`;
+    if(perStudentMap[key] && counts[r.status] !== undefined){ perStudentMap[key][r.status] = (perStudentMap[key][r.status] || 0) + 1; }
+  });
+  const perStudentRows = Object.values(perStudentMap).sort((a,b)=> (a.no+'').localeCompare(b.no+'','id',{numeric:true})).map(item=>`
+    <div class="status-row stack" style="padding:9px 4px;">
+      <div class="who">
+        <div class="name">${escapeHtml(item.nama)}</div>
+        <div class="no">No. ${escapeHtml(item.no)}</div>
+      </div>
+      <div class="summary-strip" style="gap:6px;">
+        <div class="summary-chip Hadir"><div class="n">${item.Hadir}</div><div class="l">Hadir</div></div>
+        <div class="summary-chip Sakit"><div class="n">${item.Sakit}</div><div class="l">Sakit</div></div>
+        <div class="summary-chip Izin"><div class="n">${item.Izin}</div><div class="l">Izin</div></div>
+        <div class="summary-chip Alpa"><div class="n">${item.Alpa}</div><div class="l">Alpa</div></div>
+        <div class="summary-chip Terlambat"><div class="n">${item.Terlambat}</div><div class="l">Terlambat</div></div>
+      </div>
+    </div>
+  `).join('');
+
+  // Kelompokkan per tanggal: siswa tidak hadir pada tanggal itu + nama petugas
+  // piket yang menginput data pada tanggal tersebut.
+  const byTanggal = {};
+  records.forEach(r=>{ (byTanggal[r.tanggal] = byTanggal[r.tanggal] || []).push(r); });
+  const riwayatRows = Object.keys(byTanggal).sort((a,b)=> b.localeCompare(a)).map(tgl=>{
+    const dayRecords = byTanggal[tgl];
+    const tidakHadir = dayRecords.filter(r=> r.status !== 'Hadir').sort((a,b)=> (a.no+'').localeCompare(b.no+'','id',{numeric:true}));
+    const petugasSet = [...new Set(dayRecords.map(r=>r.petugas).filter(Boolean))];
+    const petugasLabel = petugasSet.length ? petugasSet.join(', ') : 'belum tercatat';
+    const items = tidakHadir.length ? tidakHadir.map(r=>`
+      <div class="ah-item">
+        <span class="ah-name">${escapeHtml(r.nama)}</span>
+        <span class="ah-status ${r.status}">${escapeHtml(r.status)}</span>
+      </div>
+    `).join('') : '<div class="ah-empty">Semua siswa hadir 🎉</div>';
+    return `
+      <div class="status-row stack" style="padding:10px 4px; border-bottom:1px solid var(--rule);">
+        <div class="who" style="width:100%;">
+          <div class="name">${fmtTanggal(tgl)}</div>
+          <div class="no">Petugas piket: ${escapeHtml(petugasLabel)}</div>
+        </div>
+        ${items}
+      </div>
+    `;
+  }).join('');
+
+  wrap.innerHTML = `
+    <p class="muted" style="margin:0 0 10px;">Periode ${fmtTanggal(start)} &ndash; ${fmtTanggal(end)} · Total entri ${records.length}</p>
+    <div class="report-grid">
+      <div class="summary-chip Hadir"><div class="n">${counts.Hadir}</div><div class="l">Hadir</div></div>
+      <div class="summary-chip Sakit"><div class="n">${counts.Sakit}</div><div class="l">Sakit</div></div>
+      <div class="summary-chip Izin"><div class="n">${counts.Izin}</div><div class="l">Izin</div></div>
+      <div class="summary-chip Alpa"><div class="n">${counts.Alpa}</div><div class="l">Alpa</div></div>
+      <div class="summary-chip Terlambat"><div class="n">${counts.Terlambat}</div><div class="l">Terlambat</div></div>
+    </div>
+    <div style="margin-top:12px;">
+      <div class="muted" style="margin-bottom:6px;">Rekap per siswa</div>
+      ${perStudentRows}
+    </div>
+    <div style="margin-top:16px;">
+      <div class="muted" style="margin-bottom:6px;">Riwayat harian &amp; petugas piket</div>
+      ${riwayatRows}
+    </div>
+  `;
+}
+document.getElementById('btnWaliRentangTampilkan').addEventListener('click', renderWaliRentang);
 
 document.getElementById('btnSimpanKasus').addEventListener('click', async ()=>{
   const kelas = document.getElementById('waliKelas').value;
@@ -1725,7 +2316,7 @@ function attachCaseCardHandlers(wrap, kelas){
   });
   wrap.querySelectorAll('[data-del-id]').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
-      if(!confirm('Hapus catatan ini beserta seluruh riwayatnya?')) return;
+      if(!confirmHapusDenganPassword('Hapus catatan ini beserta seluruh riwayatnya?')) return;
       const id = btn.dataset.delId;
       showLoading('Menghapus catatan...');
       try{
@@ -1753,7 +2344,9 @@ function renderWaliUmpanBalik(kelas, list){
     wrap.innerHTML = `<div class="empty-state"><span class="ico">📭</span>Belum ada umpan balik dari orang tua untuk kelas ini.</div>`;
     return;
   }
-  wrap.innerHTML = sorted.map(f=>`
+  wrap.innerHTML = sorted.map(f=>{
+    const hasBalasan = f.balasan && String(f.balasan).trim() !== '';
+    return `
     <div class="case-card" data-feedback-id="${f.id}">
       <div class="top">
         <div>
@@ -1763,14 +2356,33 @@ function renderWaliUmpanBalik(kelas, list){
         <span class="badge ${f.status==='Dibaca' ? 'Dibaca' : 'Baru'}">${f.status==='Dibaca' ? 'Sudah Dibaca' : 'Belum Dibaca'}</span>
       </div>
       <div class="desc">${escapeHtml(f.pesan)}</div>
+
+      ${hasBalasan ? `
+        <div class="balasan-box">
+          <div class="lbl">↩ Balasan Wali Kelas</div>
+          <div class="txt">${escapeHtml(f.balasan)}</div>
+          ${f.balasanTanggal ? `<div class="ts">${fmtTimestamp(f.balasanTanggal)}</div>` : ''}
+        </div>
+      ` : ''}
+
       <div class="feedback-actions">
         ${f.status==='Dibaca'
           ? `<button class="btn secondary sm auto" data-ub-status="${f.id}" data-ub-target="Baru">Tandai Belum Dibaca</button>`
           : `<button class="btn brass sm auto" data-ub-status="${f.id}" data-ub-target="Dibaca">Tandai Sudah Dibaca</button>`}
+        <button class="btn secondary sm auto" data-ub-toggle-balas="${f.id}">${hasBalasan ? '✎ Edit Balasan' : '↩ Balas'}</button>
         <button class="btn danger sm auto" data-ub-del="${f.id}">Hapus</button>
       </div>
+
+      <div class="balasan-form" id="ub-balas-form-${f.id}" style="display:none;">
+        <div class="field">
+          <label>Balasan untuk Orang Tua</label>
+          <textarea id="ub-balas-teks-${f.id}" placeholder="Tulis balasan Anda di sini...">${hasBalasan ? escapeHtml(f.balasan) : ''}</textarea>
+        </div>
+        <button class="btn brass sm auto" data-ub-submit-balas="${f.id}">Kirim Balasan</button>
+      </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
   attachUmpanBalikHandlers(wrap, kelas);
 }
 
@@ -1792,9 +2404,43 @@ function attachUmpanBalikHandlers(wrap, kelas){
       finally{ hideLoading(); }
     });
   });
+  wrap.querySelectorAll('[data-ub-toggle-balas]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const el = document.getElementById('ub-balas-form-'+btn.dataset.ubToggleBalas);
+      el.style.display = el.style.display==='none' ? 'flex' : 'none';
+      if(el.style.display==='flex'){
+        const ta = document.getElementById('ub-balas-teks-'+btn.dataset.ubToggleBalas);
+        if(ta) ta.focus();
+      }
+    });
+  });
+  wrap.querySelectorAll('[data-ub-submit-balas]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.dataset.ubSubmitBalas;
+      const teksEl = document.getElementById('ub-balas-teks-'+id);
+      const balasan = teksEl.value.trim();
+      if(!balasan){ toast('Isi balasan terlebih dahulu', true); return; }
+      showLoading('Mengirim balasan...');
+      try{
+        const result = await apiPost('addBalasanUmpanBalik', {id, balasan});
+        const list = umpanBalikCache[kelas] || [];
+        const item = list.find(f=>f.id===id);
+        if(item){
+          item.balasan = balasan;
+          item.balasanTanggal = result && result.balasanTanggal ? result.balasanTanggal : new Date().toISOString();
+          // Membalas otomatis menandai pesan sebagai sudah dibaca.
+          item.status = 'Dibaca';
+        }
+        persistCache();
+        renderWaliUmpanBalik(kelas, list);
+        toast('Balasan terkirim ke orang tua');
+      }catch(err){ toast('Gagal mengirim balasan: '+err.message, true); }
+      finally{ hideLoading(); }
+    });
+  });
   wrap.querySelectorAll('[data-ub-del]').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
-      if(!confirm('Hapus pesan umpan balik ini?')) return;
+      if(!confirmHapusDenganPassword('Hapus pesan umpan balik ini?')) return;
       const id = btn.dataset.ubDel;
       showLoading('Menghapus pesan...');
       try{
@@ -1826,7 +2472,7 @@ async function renderKepsekAll(){
 function computeStatusCountsPerSiswa(records){
   const map = {};
   siswaList.forEach(s=>{
-    map[`${s.kelas}::${s.no}`] = { no:s.no, nama:s.nama, kelas:s.kelas, Hadir:0, Sakit:0, Izin:0, Alpa:0 };
+    map[`${s.kelas}::${s.no}`] = { no:s.no, nama:s.nama, kelas:s.kelas, Hadir:0, Sakit:0, Izin:0, Alpa:0, Terlambat:0 };
   });
   records.forEach(r=>{
     const key = `${r.kelas}::${r.no}`;
@@ -1856,7 +2502,7 @@ function renderStatusRankCard(wrapId, statField, records, emoji){
 }
 
 function clearStatusRankCards(msg){
-  ['kepsekAlpaRankWrap','kepsekSakitRankWrap','kepsekIzinRankWrap'].forEach(id=>{
+  ['kepsekAlpaRankWrap','kepsekSakitRankWrap','kepsekIzinRankWrap','kepsekTerlambatRankWrap'].forEach(id=>{
     const wrap = document.getElementById(id);
     if(wrap) wrap.innerHTML = msg;
   });
@@ -1924,6 +2570,7 @@ async function renderKepsekRekap(){
   renderStatusRankCard('kepsekAlpaRankWrap', 'Alpa', allRecords, '✓');
   renderStatusRankCard('kepsekSakitRankWrap', 'Sakit', allRecords, '✓');
   renderStatusRankCard('kepsekIzinRankWrap', 'Izin', allRecords, '✓');
+  renderStatusRankCard('kepsekTerlambatRankWrap', 'Terlambat', allRecords, '✓');
 }
 
 function renderKepsekKartu(){
@@ -2005,36 +2652,73 @@ async function init(){
     // Segarkan di belakang layar tanpa mengunci layar.
     refreshFromServerInBackground();
   }else{
-    // Tidak ada cache sama sekali (pertama kali dibuka) — tampilkan overlay seperti biasa.
-    showLoading('Memuat daftar siswa...');
-    setSync('busy', 'Sinkron...');
+    // Tidak ada cache sama sekali (pertama kali dibuka) — tampilkan overlay
+    // dan coba sinkron otomatis sampai 3 kali sebelum menyerah.
+    await attemptInitialSync();
+  }
+}
+
+const INITIAL_SYNC_MAX_ATTEMPTS = 3;
+async function attemptInitialSync(){
+  const retryBtn = document.getElementById('loadingRetryBtn');
+  const cancelBtn = document.getElementById('loadingCancelBtn');
+  retryBtn.classList.remove('show');
+  cancelBtn.classList.remove('show');
+  showLoading('Memuat daftar siswa...');
+  setSync('busy', 'Sinkron...');
+
+  for(let percobaan = 1; percobaan <= INITIAL_SYNC_MAX_ATTEMPTS; percobaan++){
+    if(percobaan > 1){
+      document.getElementById('loadingMsg').textContent = `Mencoba sinkron lagi... (percobaan ${percobaan}/${INITIAL_SYNC_MAX_ATTEMPTS})`;
+      await new Promise(r => setTimeout(r, 1500)); // jeda singkat sebelum mencoba lagi
+    }
     try{
       await Promise.all([loadSiswa(true), loadActionSummary(true)]);
       persistCache();
       setSync('', 'Tersinkron');
       refreshHeaderScaffolding();
       renderDataSiswaList();
-    }catch(err){
-      console.error(err);
-      setSync('err', 'Gagal sinkron');
-      toast('Gagal memuat data: ' + err.message, true);
-    }finally{
       hideLoading();
+      return;
+    }catch(err){
+      console.error(`Percobaan sinkron ${percobaan}/${INITIAL_SYNC_MAX_ATTEMPTS} gagal:`, err);
+      if(percobaan === INITIAL_SYNC_MAX_ATTEMPTS){
+        setSync('err', 'Gagal sinkron');
+        clearInterval(loadingProgressTimer);
+        clearTimeout(loadingCancelTimer);
+        document.getElementById('loadingMsg').textContent = `Gagal memuat data setelah ${INITIAL_SYNC_MAX_ATTEMPTS} percobaan: ${err.message}`;
+        setLoadingPct(0);
+        retryBtn.classList.add('show');
+        cancelBtn.classList.add('show');
+      }
     }
   }
 }
+document.getElementById('loadingRetryBtn').addEventListener('click', ()=>{
+  attemptInitialSync();
+});
 
+const BACKGROUND_SYNC_MAX_ATTEMPTS = 3;
 async function refreshFromServerInBackground(){
-  try{
-    await Promise.all([loadSiswa(true), loadActionSummary(true)]);
-    persistCache();
-    setSync('', 'Tersinkron');
-    await rerenderActiveTab();
-  }catch(err){
-    // Gagal menyegarkan bukan masalah besar — data cache lama tetap tampil
-    // dan bisa dipakai. Cukup tandai status sinkron sebagai gagal.
-    console.warn('Gagal menyegarkan dari server, tetap memakai cache lokal:', err);
-    setSync('err', 'Gagal sinkron (pakai cache)');
+  for(let percobaan = 1; percobaan <= BACKGROUND_SYNC_MAX_ATTEMPTS; percobaan++){
+    if(percobaan > 1){
+      setSync('busy', `Sinkron ulang... (${percobaan}/${BACKGROUND_SYNC_MAX_ATTEMPTS})`);
+      await new Promise(r => setTimeout(r, 1500)); // jeda singkat sebelum mencoba lagi
+    }
+    try{
+      await Promise.all([loadSiswa(true), loadActionSummary(true)]);
+      persistCache();
+      setSync('', 'Tersinkron');
+      await rerenderActiveTab();
+      return;
+    }catch(err){
+      // Gagal menyegarkan bukan masalah besar — data cache lama tetap tampil
+      // dan bisa dipakai, jadi tidak ada overlay/popup yang mengganggu di sini.
+      console.warn(`Percobaan sinkron latar belakang ${percobaan}/${BACKGROUND_SYNC_MAX_ATTEMPTS} gagal:`, err);
+      if(percobaan === BACKGROUND_SYNC_MAX_ATTEMPTS){
+        setSync('err', 'Gagal sinkron (pakai cache)');
+      }
+    }
   }
 }
 init();
